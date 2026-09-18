@@ -1,0 +1,19 @@
+{
+  "name": "dora-cms-monorepo",
+  "private": true,
+  "version": "0.1.0",
+  "engines": {
+    "node": ">=20"
+  },
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "npm run build --workspaces --if-present",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present",
+    "dev:server": "npm run dev --workspace=@dora-cms/server",
+    "hash-password": "npm run hash-password --workspace=@dora-cms/server"
+  },
+  "license": "MIT"
+}

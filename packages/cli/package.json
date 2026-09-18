@@ -1,0 +1,45 @@
+{
+  "name": "dora-cms",
+  "version": "0.1.0",
+  "description": "Setup CLI for dora-cms — generates the @dora-cms/server .env (secrets, admin password hash, storage config) interactively.",
+  "keywords": [
+    "cms",
+    "cli",
+    "setup",
+    "scaffolding",
+    "self-hosted"
+  ],
+  "license": "MIT",
+  "author": "dora-cms contributors",
+  "type": "module",
+  "bin": {
+    "dora-cms": "./dist/cli.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json && chmod +x dist/cli.js",
+    "dev": "tsx src/cli.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "prompts": "^2.4.2"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/node": "^20.12.12",
+    "@types/prompts": "^2.4.9",
+    "tsx": "^4.11.0",
+    "typescript": "^5.4.0",
+    "vitest": "^1.6.0"
+  }
+}
