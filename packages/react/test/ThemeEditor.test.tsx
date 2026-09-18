@@ -67,6 +67,7 @@ describe("ThemeEditor", () => {
       </DoraProvider>
     );
 
+    await user.click(await screen.findByText(/Theme colors/));
     const input = (await screen.findByText("Brand color")).closest("label")!.querySelector("input")!;
     await user.click(input);
     fireEventChange(input, "#00ff00");
@@ -74,6 +75,29 @@ describe("ThemeEditor", () => {
     await waitFor(() =>
       expect(calls.some((c) => c.method === "PUT" && c.path === "/api/sites/site1/content/theme.primary")).toBe(true)
     );
+  });
+
+  it("starts collapsed and expands/collapses on toggle click", async () => {
+    setAdminMode(true);
+    seedAuthToken();
+    installMockFetch({
+      "GET /api/sites/site1/content": () => ({ body: { items: [] } }),
+    });
+    const user = userEvent.setup();
+    render(
+      <DoraProvider siteId="site1" apiUrl="http://api.test">
+        <ThemeEditor variables={variables} />
+      </DoraProvider>
+    );
+
+    const toggle = await screen.findByText(/Theme colors/);
+    expect(screen.queryByText("Brand color")).not.toBeInTheDocument();
+
+    await user.click(toggle);
+    expect(await screen.findByText("Brand color")).toBeInTheDocument();
+
+    await user.click(toggle);
+    expect(screen.queryByText("Brand color")).not.toBeInTheDocument();
   });
 });
 

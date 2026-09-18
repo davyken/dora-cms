@@ -1,15 +1,22 @@
-import {
-  AdminLoginGate,
-  DoraProvider,
-  Editable,
-  EditableBlog,
-  EditableImage,
-  ThemeEditor,
-  useDora,
-} from "@dora-cms/react";
+import { AdminLoginGate, DoraProvider, EditableBlog, ThemeEditor, useDora } from "@dora-cms/react";
+import { About } from "./sections/About";
+import { FAQ } from "./sections/FAQ";
+import { Footer } from "./sections/Footer";
+import { Hero } from "./sections/Hero";
+import { Navbar } from "./sections/Navbar";
+import { ScrollToTop } from "./sections/ScrollToTop";
+import { Services } from "./sections/Services";
+import { Testimonials } from "./sections/Testimonials";
+import { Topbar } from "./sections/Topbar";
 
 const SITE_ID = import.meta.env.VITE_DORA_SITE_ID ?? "demo";
 const API_URL = import.meta.env.VITE_DORA_API_URL ?? "http://localhost:4000";
+
+const THEME_VARIABLES = [
+  { key: "primary", label: "Primary (headings, links)", default: "#b45309" },
+  { key: "secondary", label: "Secondary (buttons)", default: "#7c2d12" },
+  { key: "accent", label: "Accent (highlights)", default: "#fbbf24" },
+];
 
 export function App() {
   return (
@@ -33,52 +40,31 @@ function Site() {
       )}
       {isAdminMode && isAuthenticated && (
         <div className="demo-banner demo-banner--admin">
-          Admin mode — the password for this demo is in the README. Edit text by clicking it,
-          swap images below them, and use the color picker in the corner.
+          Admin mode — edit text by clicking it, swap images below them, and open "Theme colors"
+          in the bottom-right corner to change the palette.
         </div>
       )}
 
-      <ThemeEditor variables={[{ key: "primary", label: "Brand color", default: "#b45309" }]} />
+      <ThemeEditor variables={THEME_VARIABLES} />
 
-      <header className="site-header">
-        <EditableImage id="logo" src="/logo.svg" alt="Maison Dora logo" className="logo" />
-        <nav>
-          <a href="#about">About</a>
-          <a href="#blog">Journal</a>
-        </nav>
-      </header>
-
-      <section className="hero">
-        <Editable id="hero-title" as="h1">
-          Maison Dora
-        </Editable>
-        <Editable id="hero-subtitle" as="p">
-          Sourdough, pastry, and coffee — baked fresh every morning in the heart of town.
-        </Editable>
-      </section>
-
-      <section id="about" className="about">
-        <EditableImage id="about-image" src="/oven.svg" alt="Our wood-fired oven" className="about-image" />
-        <Editable id="about-text" as="p">
-          Every loaf here starts with a starter that's been alive for eleven years. We mill part
-          of our own flour, and everything on the counter by 7am was made before sunrise.
-        </Editable>
-      </section>
+      <Topbar />
+      <Navbar />
+      <Hero />
+      <About />
+      <Services />
+      <Testimonials />
+      <FAQ />
 
       <section id="blog" className="blog">
-        <h2>From the journal</h2>
+        <div className="section-heading">
+          <span className="eyebrow">Latest Updates</span>
+          <h2>From the journal</h2>
+        </div>
         <EditableBlog />
       </section>
 
-      <footer>
-        <p>
-          Built with{" "}
-          <a href="https://github.com/davyken/dora-cms" target="_blank" rel="noreferrer">
-            dora-cms
-          </a>{" "}
-          — a drop-in, self-hosted content layer for React sites.
-        </p>
-      </footer>
+      <Footer />
+      <ScrollToTop />
     </div>
   );
 }

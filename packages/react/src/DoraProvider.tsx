@@ -12,6 +12,7 @@ interface DoraContextValue {
   login: (password: string) => Promise<void>;
   logout: () => void;
   setContentValue: (slotId: string, type: ContentType, value: string) => Promise<void>;
+  resetContentValue: (slotId: string) => Promise<void>;
 }
 
 const DoraContext = createContext<DoraContextValue | null>(null);
@@ -82,6 +83,18 @@ export function DoraProvider({ children, siteId, apiUrl, adminParam = "edit" }: 
     [api]
   );
 
+  const resetContentValue = useCallback(
+    async (slotId: string) => {
+      await api.deleteContent(slotId);
+      setContent((prev) => {
+        const next = { ...prev };
+        delete next[slotId];
+        return next;
+      });
+    },
+    [api]
+  );
+
   const value: DoraContextValue = {
     config,
     api,
@@ -92,6 +105,7 @@ export function DoraProvider({ children, siteId, apiUrl, adminParam = "edit" }: 
     login,
     logout,
     setContentValue,
+    resetContentValue,
   };
 
   return <DoraContext.Provider value={value}>{children}</DoraContext.Provider>;

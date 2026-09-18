@@ -1,6 +1,6 @@
 {
   "name": "@dora-cms/server",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Self-hosted API backend for dora-cms — content, blog and image-upload endpoints with admin auth. Deployable to Render as a Node service or to Vercel as serverless functions.",
   "keywords": [
     "cms",

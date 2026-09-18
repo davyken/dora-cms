@@ -2,6 +2,16 @@ import type { BlogPost, ContentItem, ContentType, DoraConfig } from "./types";
 
 const TOKEN_KEY = "dora_token";
 
+export class DoraApiError extends Error {
+  constructor(
+    message: string,
+    public status: number
+  ) {
+    super(message);
+    this.name = "DoraApiError";
+  }
+}
+
 export function getToken(): string | null {
   if (typeof window === "undefined") return null;
   try {
@@ -48,7 +58,7 @@ export function createDoraApi(config: DoraConfig) {
     });
     if (!res.ok) {
       const body = await res.json().catch(() => ({}) as { message?: string });
-      throw new Error(body.message || `Request failed with status ${res.status}`);
+      throw new DoraApiError(body.message || `Request failed with status ${res.status}`, res.status);
     }
     if (res.status === 204) return undefined as T;
     return res.json() as Promise<T>;
@@ -80,6 +90,16 @@ export function createDoraApi(config: DoraConfig) {
         method: "PUT",
         body: JSON.stringify({ type, value }),
       });
+    },
+
+    async deleteContent(slotId: string): Promise<void> {
+      try {
+        await request(`/content/${encodeURIComponent(slotId)}`, { method: "DELETE" });
+      } catch (err) {
+        // Nothing saved for this slot yet — resetting is already a no-op, not a failure.
+        if (err instanceof DoraApiError && err.status === 404) return;
+        throw err;
+      }
     },
 
     async uploadImage(file: File): Promise<{ url: string }> {

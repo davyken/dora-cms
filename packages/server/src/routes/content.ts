@@ -82,3 +82,16 @@ contentRouter.put("/:slotId", requireAuth, async (req, res, next) => {
     next(err);
   }
 });
+
+// Reverts a slot back to whatever default the component itself renders
+// (its `src`/`children` prop) by deleting the stored override entirely,
+// rather than trying to store an empty value.
+contentRouter.delete("/:slotId", requireAuth, async (req, res, next) => {
+  try {
+    const result = await ContentItem.deleteOne({ siteId: siteIdOf(req.params), slotId: req.params.slotId });
+    if (result.deletedCount === 0) return res.status(404).json({ message: "No saved value for this slot" });
+    res.status(204).end();
+  } catch (err) {
+    next(err);
+  }
+});

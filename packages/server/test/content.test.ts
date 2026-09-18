@@ -134,3 +134,33 @@ describe("PUT /api/sites/:siteId/content/:slotId", () => {
     expect(res.body.items).toEqual([]);
   });
 });
+
+describe("DELETE /api/sites/:siteId/content/:slotId", () => {
+  it("requires authentication", async () => {
+    const res = await agent().delete(`/api/sites/${uniqueSiteId()}/content/logo`);
+    expect(res.status).toBe(401);
+  });
+
+  it("deletes a saved value, so it stops appearing in the public list", async () => {
+    const siteId = uniqueSiteId();
+    const token = await loginAndGetToken(siteId);
+
+    await agent()
+      .put(`/api/sites/${siteId}/content/logo`)
+      .set("Authorization", `Bearer ${token}`)
+      .send({ type: "image", value: "https://cdn.example.com/logo.png" });
+
+    const del = await agent().delete(`/api/sites/${siteId}/content/logo`).set("Authorization", `Bearer ${token}`);
+    expect(del.status).toBe(204);
+
+    const res = await agent().get(`/api/sites/${siteId}/content`);
+    expect(res.body.items).toEqual([]);
+  });
+
+  it("returns 404 when there is nothing saved for that slot", async () => {
+    const siteId = uniqueSiteId();
+    const token = await loginAndGetToken(siteId);
+    const res = await agent().delete(`/api/sites/${siteId}/content/logo`).set("Authorization", `Bearer ${token}`);
+    expect(res.status).toBe(404);
+  });
+});

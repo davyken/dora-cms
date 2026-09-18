@@ -75,4 +75,56 @@ describe("EditableImage", () => {
     await waitFor(() => expect(screen.getByAltText("Logo")).toHaveAttribute("src", "https://cdn.test/new-logo.png"));
     expect(calls.some((c) => c.method === "POST" && c.path === "/api/sites/site1/upload")).toBe(true);
   });
+
+  it("applies the className to the container, not the <img>, so object-fit can crop uploads", async () => {
+    installMockFetch({
+      "GET /api/sites/site1/content": () => ({ body: { items: [] } }),
+    });
+    render(
+      <DoraProvider siteId="site1" apiUrl="http://api.test">
+        <EditableImage id="logo" src="/logo.png" alt="Logo" className="logo-box" />
+      </DoraProvider>
+    );
+    const img = await screen.findByAltText("Logo");
+    expect(img.className).toBe("");
+    expect(img.parentElement).toHaveClass("logo-box");
+  });
+
+  it("shows no 'Reset' control when nothing has been saved yet", async () => {
+    setAdminMode(true);
+    seedAuthToken();
+    installMockFetch({
+      "GET /api/sites/site1/content": () => ({ body: { items: [] } }),
+    });
+    render(
+      <DoraProvider siteId="site1" apiUrl="http://api.test">
+        <EditableImage id="logo" src="/logo.png" alt="Logo" />
+      </DoraProvider>
+    );
+    await screen.findByText("Change image");
+    expect(screen.queryByText("Reset")).not.toBeInTheDocument();
+  });
+
+  it("shows 'Reset' once a value is saved, and clicking it reverts to the default src", async () => {
+    setAdminMode(true);
+    seedAuthToken();
+    installMockFetch({
+      "GET /api/sites/site1/content": () => ({
+        body: { items: [{ slotId: "logo", type: "image", value: "https://cdn.test/logo.png", updatedAt: "now" }] },
+      }),
+      "DELETE /api/sites/site1/content/logo": () => ({ status: 204, body: undefined }),
+    });
+    const user = userEvent.setup();
+    render(
+      <DoraProvider siteId="site1" apiUrl="http://api.test">
+        <EditableImage id="logo" src="/logo.png" alt="Logo" />
+      </DoraProvider>
+    );
+
+    expect(await screen.findByAltText("Logo")).toHaveAttribute("src", "https://cdn.test/logo.png");
+    await user.click(screen.getByText("Reset"));
+
+    await waitFor(() => expect(screen.getByAltText("Logo")).toHaveAttribute("src", "/logo.png"));
+    expect(screen.queryByText("Reset")).not.toBeInTheDocument();
+  });
 });

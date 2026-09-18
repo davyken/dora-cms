@@ -1,51 +1,159 @@
-.dora-editable {
-  outline: 2px dashed transparent;
-  outline-offset: 2px;
-  cursor: text;
-  transition: outline-color 0.15s ease;
-}
-.dora-editable:hover,
-.dora-editable:focus {
-  outline-color: #4f46e5;
+/* Design tokens for dora-cms's own admin UI — namespaced separately from
+   the site's --dora-* theme variables (ThemeEditor) so the two never collide. */
+:root {
+  --dora-admin-accent: #4f46e5;
+  --dora-admin-accent-hover: #4338ca;
+  --dora-admin-danger: #dc2626;
+  --dora-admin-ink: #18181b;
+  --dora-admin-muted: #6b7280;
+  --dora-admin-border: #e5e7eb;
+  --dora-admin-surface: #ffffff;
+  --dora-admin-radius: 10px;
+  --dora-admin-shadow: 0 8px 24px rgba(17, 17, 17, 0.12), 0 2px 6px rgba(17, 17, 17, 0.06);
+  --dora-admin-font: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
 }
 
+/* ---------- Editable (inline text) ---------- */
+.dora-editable {
+  outline: 2px dashed transparent;
+  outline-offset: 3px;
+  border-radius: 4px;
+  cursor: text;
+  transition: outline-color 0.15s ease, background-color 0.15s ease;
+}
+.dora-editable:hover {
+  outline-color: color-mix(in srgb, var(--dora-admin-accent) 50%, transparent);
+}
+.dora-editable:focus {
+  outline-color: var(--dora-admin-accent);
+  outline-style: solid;
+  background-color: color-mix(in srgb, var(--dora-admin-accent) 6%, transparent);
+}
+
+/* ---------- EditableImage ---------- */
 .dora-editable-image {
   position: relative;
   display: inline-block;
+  overflow: hidden;
 }
-.dora-editable-image-trigger {
+.dora-editable-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.dora-editable-image--admin {
+  border-radius: 6px;
+  outline: 2px dashed transparent;
+  outline-offset: 2px;
+  transition: outline-color 0.15s ease;
+}
+.dora-editable-image--admin:hover {
+  outline-color: color-mix(in srgb, var(--dora-admin-accent) 50%, transparent);
+}
+.dora-editable-image-controls {
   position: absolute;
-  bottom: 8px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: rgba(17, 17, 17, 0.75);
-  color: #fff;
+  inset: auto 0 0 0;
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.65), transparent);
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+.dora-editable-image--admin:hover .dora-editable-image-controls,
+.dora-editable-image--admin:focus-within .dora-editable-image-controls {
+  opacity: 1;
+}
+.dora-editable-image-trigger,
+.dora-editable-image-reset {
+  font-family: var(--dora-admin-font);
   border: none;
   border-radius: 6px;
-  padding: 6px 10px;
+  padding: 6px 12px;
   font-size: 12px;
+  font-weight: 500;
   cursor: pointer;
+  transition: background-color 0.15s ease, opacity 0.15s ease;
+}
+.dora-editable-image-trigger:disabled,
+.dora-editable-image-reset:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+.dora-editable-image-trigger {
+  background: #fff;
+  color: var(--dora-admin-ink);
+}
+.dora-editable-image-trigger:hover:not(:disabled) {
+  background: #f3f4f6;
+}
+.dora-editable-image-reset {
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+}
+.dora-editable-image-reset:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.25);
 }
 .dora-editable-image-error {
-  display: block;
-  color: #dc2626;
+  position: absolute;
+  bottom: -22px;
+  left: 0;
+  right: 0;
+  text-align: center;
+  color: var(--dora-admin-danger);
+  font-family: var(--dora-admin-font);
   font-size: 12px;
-  margin-top: 4px;
 }
 
+/* ---------- ThemeEditor ---------- */
 .dora-theme-editor {
   position: fixed;
   bottom: 16px;
   right: 16px;
-  background: #fff;
-  border: 1px solid #e5e7eb;
-  border-radius: 10px;
-  padding: 12px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  left: auto;
+  max-width: calc(100vw - 32px);
   z-index: 9999;
+  font-family: var(--dora-admin-font);
+}
+.dora-theme-editor-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--dora-admin-ink);
+  color: #fff;
+  border: none;
+  border-radius: 999px;
+  padding: 10px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  box-shadow: var(--dora-admin-shadow);
+  transition: background-color 0.15s ease;
+}
+.dora-theme-editor-toggle:hover {
+  background: #27272a;
+}
+.dora-theme-editor--open .dora-theme-editor-toggle {
+  border-radius: var(--dora-admin-radius) var(--dora-admin-radius) 0 0;
+  width: 100%;
+}
+.dora-theme-editor-panel {
+  background: var(--dora-admin-surface);
+  border: 1px solid var(--dora-admin-border);
+  border-top: none;
+  border-radius: 0 0 var(--dora-admin-radius) var(--dora-admin-radius);
+  box-shadow: var(--dora-admin-shadow);
+  padding: 12px;
+  max-height: min(60vh, 420px);
+  overflow-y: auto;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 4px;
+  width: 240px;
+  max-width: calc(100vw - 32px);
 }
 .dora-theme-editor-row {
   display: flex;
@@ -53,56 +161,186 @@
   justify-content: space-between;
   gap: 12px;
   font-size: 13px;
+  color: var(--dora-admin-ink);
+  padding: 6px 4px;
+  border-radius: 6px;
+}
+.dora-theme-editor-row:hover {
+  background: #f9fafb;
+}
+.dora-theme-editor-row input[type="color"] {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 1px solid var(--dora-admin-border);
+  border-radius: 6px;
+  cursor: pointer;
 }
 
+/* ---------- AdminLoginGate ---------- */
 .dora-login-gate {
   min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
   background: #f9fafb;
+  font-family: var(--dora-admin-font);
 }
 .dora-login-form {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  padding: 24px;
-  background: #fff;
-  border: 1px solid #e5e7eb;
-  border-radius: 12px;
-  width: 280px;
+  gap: 12px;
+  padding: 28px;
+  background: var(--dora-admin-surface);
+  border: 1px solid var(--dora-admin-border);
+  border-radius: 14px;
+  box-shadow: var(--dora-admin-shadow);
+  width: 300px;
+}
+.dora-login-form h2 {
+  margin: 0 0 4px;
+  font-size: 17px;
+  color: var(--dora-admin-ink);
+}
+.dora-login-form input {
+  font-family: var(--dora-admin-font);
+  font-size: 14px;
+  padding: 10px 12px;
+  border: 1px solid var(--dora-admin-border);
+  border-radius: 8px;
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.dora-login-form input:focus {
+  border-color: var(--dora-admin-accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--dora-admin-accent) 18%, transparent);
+}
+.dora-login-form button {
+  font-family: var(--dora-admin-font);
+  font-size: 14px;
+  font-weight: 600;
+  padding: 10px 12px;
+  border: none;
+  border-radius: 8px;
+  background: var(--dora-admin-accent);
+  color: #fff;
+  cursor: pointer;
+  transition: background-color 0.15s ease, opacity 0.15s ease;
+}
+.dora-login-form button:hover:not(:disabled) {
+  background: var(--dora-admin-accent-hover);
+}
+.dora-login-form button:disabled {
+  opacity: 0.6;
+  cursor: default;
 }
 .dora-login-error {
-  color: #dc2626;
+  color: var(--dora-admin-danger);
   font-size: 13px;
   margin: 0;
 }
 
+/* ---------- EditableBlog ---------- */
+.dora-blog {
+  font-family: inherit;
+}
+.dora-blog-error {
+  color: var(--dora-admin-danger);
+  font-size: 13px;
+  margin: 0 0 12px;
+  font-family: var(--dora-admin-font);
+}
 .dora-blog-new {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  padding: 16px;
-  border: 1px dashed #d1d5db;
-  border-radius: 10px;
-  margin-top: 16px;
+  gap: 10px;
+  padding: 18px;
+  border: 1.5px dashed var(--dora-admin-border);
+  border-radius: 12px;
+  margin-top: 20px;
+  font-family: var(--dora-admin-font);
+}
+.dora-blog-new input,
+.dora-blog-new textarea {
+  font-family: inherit;
+  font-size: 14px;
+  padding: 10px 12px;
+  border: 1px solid var(--dora-admin-border);
+  border-radius: 8px;
+  outline: none;
+  resize: vertical;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.dora-blog-new input:focus,
+.dora-blog-new textarea:focus {
+  border-color: var(--dora-admin-accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--dora-admin-accent) 18%, transparent);
+}
+.dora-blog-new textarea {
+  min-height: 90px;
+}
+.dora-blog-new > button {
+  align-self: flex-start;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 8px 14px;
+  border: 1px solid var(--dora-admin-accent);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--dora-admin-accent);
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+.dora-blog-new > button:hover {
+  background: color-mix(in srgb, var(--dora-admin-accent) 8%, transparent);
 }
 .dora-blog-new-actions {
   display: flex;
   gap: 8px;
 }
-.dora-blog-error {
-  color: #dc2626;
+.dora-blog-new-actions button {
+  font-family: inherit;
   font-size: 13px;
-  margin: 0;
+  font-weight: 600;
+  padding: 8px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.15s ease, opacity 0.15s ease;
+}
+.dora-blog-new-actions button:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+.dora-blog-new-actions button:first-child {
+  border: none;
+  background: var(--dora-admin-accent);
+  color: #fff;
+}
+.dora-blog-new-actions button:first-child:hover:not(:disabled) {
+  background: var(--dora-admin-accent-hover);
+}
+.dora-blog-new-actions button:last-child {
+  border: 1px solid var(--dora-admin-border);
+  background: #fff;
+  color: var(--dora-admin-muted);
+}
+.dora-blog-new-actions button:last-child:hover:not(:disabled) {
+  background: #f9fafb;
 }
 .dora-blog-delete {
-  margin-top: 8px;
+  margin-top: 10px;
+  font-family: var(--dora-admin-font);
   font-size: 12px;
-  color: #dc2626;
+  font-weight: 500;
+  color: var(--dora-admin-danger);
   background: none;
-  border: 1px solid #dc2626;
+  border: 1px solid var(--dora-admin-danger);
   border-radius: 6px;
-  padding: 4px 8px;
+  padding: 5px 10px;
   cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+.dora-blog-delete:hover {
+  background: color-mix(in srgb, var(--dora-admin-danger) 8%, transparent);
 }
