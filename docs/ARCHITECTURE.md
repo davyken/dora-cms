@@ -175,7 +175,7 @@ after weighing cost vs. value, not overlooked:
   responsive breakpoints, undo/redo) is a multi-month build on its own — see §3. If this becomes
   a priority later, the plan is to integrate an existing engine (e.g. `craft.js`) rather than
   building one from scratch.
-- **A setup CLI** (`npx dora-cms init`) that auto-detects the deploy target and provisions a
+- **A setup CLI** (`npx @dora-cms/cli init`) that auto-detects the deploy target and provisions a
   database/storage automatically. Right now, setup is manual (`.env` + the two deploy paths in
   §5). This is the highest-value next addition for adoption friction, but was left out of this
   build pass to keep scope to frontend + backend + docs.

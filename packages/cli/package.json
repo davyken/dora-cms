@@ -1,5 +1,5 @@
 {
-  "name": "dora-cms",
+  "name": "@dora-cms/cli",
   "version": "0.1.0",
   "description": "Setup CLI for dora-cms — generates the @dora-cms/server .env (secrets, admin password hash, storage config) interactively.",
   "keywords": [

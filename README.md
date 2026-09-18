@@ -33,8 +33,8 @@ function App() {
 - [`packages/react`](./packages/react) — `@dora-cms/react`: the editing components.
 - [`packages/server`](./packages/server) — `@dora-cms/server`: the API backend (MongoDB-backed),
   deployable to Render or Vercel.
-- [`packages/cli`](./packages/cli) — `dora-cms`: `npx dora-cms init` generates the backend's
-  `.env` interactively (secrets, password hash, storage config).
+- [`packages/cli`](./packages/cli) — `@dora-cms/cli`: `npx @dora-cms/cli init` generates the
+  backend's `.env` interactively (secrets, password hash, storage config).
 
 ## Quickstart (local development)
 
@@ -42,7 +42,7 @@ function App() {
 npm install
 
 # 1. Configure the backend — either the interactive CLI...
-npm run dev --workspace=dora-cms -- init packages/server
+npm run dev --workspace=@dora-cms/cli -- init packages/server
 # ...or by hand:
 #   cp packages/server/.env.example packages/server/.env
 #   npm run hash-password -- "the-clients-password"

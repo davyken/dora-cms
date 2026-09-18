@@ -12,10 +12,17 @@ Three separate packages, each published independently:
 |---|---|---|
 | `@dora-cms/react` | scoped | The components developers `import` into their site |
 | `@dora-cms/server` | scoped | The backend — mostly deployed as its own service (Render/Vercel), not imported as a runtime dependency of another app |
-| `dora-cms` | unscoped | The CLI (`npx dora-cms init`) |
+| `@dora-cms/cli` | scoped | The CLI (`npx @dora-cms/cli init`) |
 
 They're versioned together for now (all `0.1.0`), but nothing forces that — you can bump one
 without the others once they stabilize independently.
+
+All three live under the `@dora-cms` npm organization (free tier — unlimited public packages,
+no billing involved). The unscoped name `dora-cms` was the original plan, but npm's registry
+rejected it as "too similar to existing package doracms" (an unrelated, pre-existing package) —
+an anti-typosquatting check that flags close-but-not-identical names to protect users from
+confusing installs. Publishing under the org's own scope sidesteps that check entirely and reads
+more consistently alongside the other two packages anyway.
 
 ## 2. One-time npm account setup
 
@@ -39,12 +46,9 @@ npm publish
 
 Two things already set up in `package.json` that make this work without extra flags:
 
-- **`publishConfig.access: "public"`** on both `@dora-cms/react` and `@dora-cms/server`. Scoped
-  packages (`@scope/name`) default to **private** on `npm publish`, which fails immediately
-  unless you're on a paid npm org plan. This field makes `npm publish` behave as if you'd passed
-  `--access public`, every time, without having to remember the flag. `dora-cms` (the CLI) is
-  unscoped, so it's public by default either way — the field's there for consistency, not
-  necessity.
+- **`publishConfig.access: "public"`** on all three packages. Scoped packages (`@scope/name`)
+  default to **private** on `npm publish`, which fails immediately for a free org unless you pass
+  `--access public` (or set this field) every time. This field makes it automatic.
 - **`files: ["dist", ...]`** — only the compiled output (plus a couple of deploy-relevant extras
   for `@dora-cms/server`: `api/`, `vercel.json`, `.env.example`) is published. Source `.ts`,
   tests, and config never end up in the published tarball. Run `npm pack --dry-run` in a package
@@ -101,7 +105,7 @@ The setup questions live entirely in the explicit, opt-in command the developer 
 decide to configure the backend — already built as `packages/cli`:
 
 ```bash
-npx dora-cms init
+npx @dora-cms/cli init
 ```
 
 This is the full list of questions it asks, and why each one is there:
@@ -133,7 +137,7 @@ never a prompt:
 
 ```js
 // scripts/postinstall.js — illustrative, not currently added to any package here
-console.log("\n@dora-cms/server installed. Run `npx dora-cms init` to configure it.\n");
+console.log("\n@dora-cms/server installed. Run `npx @dora-cms/cli init` to configure it.\n");
 ```
 
 This never blocks, never touches the filesystem or network, and does nothing meaningfully

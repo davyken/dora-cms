@@ -9,8 +9,8 @@ backend. Generates a JWT secret, hashes the site's admin password, and writes a 
 Run from inside `packages/server` (or pass a target directory):
 
 ```bash
-npx dora-cms init
-npx dora-cms init path/to/server
+npx @dora-cms/cli init
+npx @dora-cms/cli init path/to/server
 ```
 
 You'll be prompted for:
