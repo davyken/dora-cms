@@ -1,0 +1,112 @@
+:root {
+  --dora-primary: #b45309;
+  color-scheme: light;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  color: #292524;
+  background: #fffbeb;
+}
+
+.demo-banner {
+  display: block;
+  text-align: center;
+  padding: 10px 16px;
+  background: var(--dora-primary);
+  color: #fff;
+  text-decoration: none;
+  font-size: 14px;
+}
+.demo-banner--admin {
+  cursor: default;
+}
+
+.site-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 32px;
+}
+.site-header nav {
+  display: flex;
+  gap: 20px;
+}
+.site-header nav a {
+  color: #292524;
+  text-decoration: none;
+  font-weight: 500;
+}
+.logo img {
+  height: 48px;
+  display: block;
+}
+
+.hero {
+  text-align: center;
+  padding: 64px 24px;
+  background: linear-gradient(180deg, #fef3c7, transparent);
+}
+.hero h1 {
+  font-family: Georgia, serif;
+  font-size: 48px;
+  margin: 0 0 12px;
+  color: var(--dora-primary);
+}
+.hero p {
+  font-size: 18px;
+  max-width: 520px;
+  margin: 0 auto;
+  color: #57534e;
+}
+
+.about {
+  display: flex;
+  align-items: center;
+  gap: 40px;
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 48px 24px;
+}
+.about-image img {
+  width: 320px;
+  border-radius: 12px;
+  display: block;
+}
+.about p {
+  font-size: 17px;
+  line-height: 1.6;
+  color: #44403c;
+}
+
+.blog {
+  max-width: 700px;
+  margin: 0 auto;
+  padding: 48px 24px;
+}
+.blog h2 {
+  font-family: Georgia, serif;
+  color: var(--dora-primary);
+}
+.dora-blog-post {
+  padding: 16px 0;
+  border-bottom: 1px solid #f0e6d2;
+}
+.dora-blog-post h2 {
+  font-size: 20px;
+}
+
+footer {
+  text-align: center;
+  padding: 32px 24px;
+  font-size: 13px;
+  color: #78716c;
+}
+footer a {
+  color: var(--dora-primary);
+}
