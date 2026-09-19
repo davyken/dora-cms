@@ -1,6 +1,6 @@
 {
   "name": "@dora-cms/server",
-  "version": "0.3.1",
+  "version": "0.4.0",
   "description": "Self-hosted API backend for dora-cms — content, blog and image-upload endpoints with admin auth. Deployable to Render as a Node service or to Vercel as serverless functions.",
   "keywords": [
     "cms",
@@ -36,7 +36,9 @@
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.583.0",
+    "@vercel/blob": "^2.8.0",
     "bcryptjs": "^2.4.3",
+    "cloudinary": "^2.11.0",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",

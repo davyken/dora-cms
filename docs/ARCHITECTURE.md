@@ -75,6 +75,7 @@ already recognize, not a separate dashboard I have to learn.
 | Add/edit/delete blog posts | Yes (`<EditableBlog>`) — the one place clients can add brand-new content, because a post's shape (title/body/cover image) is fixed by the developer |
 | Reorder blog posts | Yes — drag by the handle on each post; the new order is saved immediately |
 | Change their own admin password | Yes (`<AdminAccountPanel>`) — no developer involvement needed |
+| Edit a page's title/meta description/social-share image | Yes (`<SeoFields>` + `<DoraHead>` or `useSeo()`) — see §4 |
 | Move, resize, or freely reposition boxes on the page | **No** — this is a full visual page-builder (Webflow/Builder.io territory) and was explicitly scoped out of v1 as a multi-month undertaking; drag-and-drop here is limited to reordering existing lists (like blog posts), not freeform layout — see §7 |
 | Add an entirely new section that didn't exist in the code | **No** — only the developer defines what's editable |
 
@@ -84,8 +85,8 @@ already recognize, not a separate dashboard I have to learn.
 dora-cms/
   packages/
     react/    @dora-cms/react — <Editable>, <EditableImage>, <ThemeEditor>, <EditableBlog>,
-              <AdminLoginGate>, <AdminAccountPanel>, <DoraProvider>. Pure UI + a thin fetch
-              client. No backend code lives here.
+              <AdminLoginGate>, <AdminAccountPanel>, <SeoFields>, <DoraHead>, <DoraProvider>.
+              Pure UI + a thin fetch client. No backend code lives here.
     server/   @dora-cms/server — Express API: content, blog, upload, auth routes. One
               codebase, two entry points (see §5).
     cli/      @dora-cms/cli — `npx @dora-cms/cli init` interactively generates the backend's
@@ -107,12 +108,38 @@ doesn't manage themselves. Nothing in `@dora-cms/react` assumes co-location with
 `{ siteId, slotId, type, value }`. Adding a new editable region to a site is just wrapping more
 JSX with a new `id` — it needs zero backend changes or migrations. This was a deliberate
 trade-off: less relational rigor, in exchange for the core promise that adopting `dora-cms`
-never requires touching the database.
+never requires touching the database. `<SeoFields page="...">` reuses this exact mechanism — a
+page's title/description/OG image are just three more `ContentItem` slots, scoped by a `page`
+string (`seo:<page>:title`, etc.), not a new data model.
+
+**Why SEO is data-only (`useSeo()`), with `<DoraHead>` as an optional convenience:**
+`@dora-cms/react` has no control over how a given site renders `<head>` — a plain Vite SPA, a
+Next.js App Router server component, and a Remix loader all do it differently, and none of them
+should be forced into dora-cms's opinion. `useSeo(page, defaults)` just returns
+`{ title, description, ogImage }` (saved value if present, the developer's default otherwise) —
+plug that into whatever your framework already uses (Next's `<Head>`, `react-helmet`, ...).
+`<DoraHead>` wraps `useSeo()` and applies the result directly to `document.title`/`<meta>` via a
+`useEffect`, which is enough for a plain client-rendered SPA (like this package's own demo) but
+does **not** affect the HTML a crawler sees before JS runs on a server-rendered framework — that
+case needs `useSeo()` fed into the framework's own server-side head API instead.
 
 **Why images aren't stored in MongoDB:** binary blobs bloat documents, defeat CDN caching, and
-hit MongoDB's 16MB document ceiling awkwardly. Uploaded images go to S3-compatible object storage
-(`src/lib/storage.ts` — works with AWS S3, Cloudflare R2, Backblaze B2, etc.) and only the
-resulting URL is stored in Mongo, alongside the text/color content.
+hit MongoDB's 16MB document ceiling awkwardly. Uploaded images go through a pluggable
+`StorageAdapter` (`src/lib/storage.ts` — one method, `upload(buffer, name, mimeType) => url`) and
+only the resulting URL is stored in Mongo, alongside the text/color content. Four adapters ship
+today, chosen with `STORAGE_DRIVER` (defaults to `s3`, so every existing deployment is
+unaffected):
+
+| `STORAGE_DRIVER` | Backend | Why you'd pick it |
+|---|---|---|
+| `s3` (default) | AWS S3 / Cloudflare R2 / Backblaze B2 / any S3-compatible endpoint | Bring your own bucket; the original adapter. |
+| `cloudinary` | Cloudinary | Managed image CDN with on-the-fly transformations available later just by editing the returned URL — no bucket/region to think about. |
+| `vercel-blob` | Vercel Blob | Zero extra signup when the backend is itself deployed on Vercel. |
+| `local` | Local disk | Zero cloud accounts for local dev, or a persistent-disk host like Render. **Does not work on Vercel** (no persistent filesystem) and is single-instance only — the same constraint as the in-memory rate-limit store (§6). |
+
+Each driver's own required env vars are enforced by `env.ts`'s `superRefine` (only the vars for
+the selected driver are required — see `.env.example`), so a misconfigured driver still fails
+fast at startup with a specific message rather than at the first upload request.
 
 **Single-tenant-per-deployment auth:** there's no multi-user account system. Each developer runs
 their own backend instance with one admin password, matching how each developer already

@@ -24,14 +24,18 @@ import {
   EditableBlog,
   AdminLoginGate,
   AdminAccountPanel,
+  SeoFields,
+  DoraHead,
 } from "@dora-cms/react";
 
 function App() {
   return (
     <DoraProvider siteId="my-site" apiUrl="https://api.yoursite.com" adminPath="/admin">
       <AdminLoginGate>
+        <DoraHead title="Welcome to Our Bakery" description="Fresh bread daily." ogImage="" />
         <ThemeEditor variables={[{ key: "primary", label: "Brand color", default: "#4f46e5" }]} />
         <AdminAccountPanel />
+        <SeoFields />
         <EditableImage id="logo" src="/logo.png" alt="Logo" />
         <Editable id="hero-title" as="h1">Welcome to Our Bakery</Editable>
         <EditableBlog />
@@ -62,6 +66,13 @@ host to serve `index.html` for that path too, since there's no real page there �
   toggle) when in admin mode and not yet authenticated; otherwise renders `children`.
 - **`<AdminAccountPanel />`** — collapsible panel letting the authenticated client change their
   own admin password; renders nothing outside admin mode.
+- **`<SeoFields page?>`** — collapsible admin panel for a page's title/meta description/
+  social-share image, scoped by `page` (default `"default"`) for multi-page sites.
+- **`<DoraHead page? title description ogImage>`** — applies `useSeo()`'s result to
+  `document.title`/`<meta>` tags; a convenience for plain client-rendered SPAs (doesn't affect
+  server-rendered markup — use `useSeo()` with your framework's head API for that).
+- **`useSeo(page, defaults)`** — `{ title, description, ogImage }`, saved values falling back to
+  `defaults`.
 - **`useDora()`** — low-level access to `{ content, isAdminMode, isAuthenticated, login, logout, setContentValue, api }`.
 
 ## License

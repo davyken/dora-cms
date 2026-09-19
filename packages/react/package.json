@@ -1,6 +1,6 @@
 {
   "name": "@dora-cms/react",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Drop-in, self-hosted client-editable content for React sites — inline text, images, theme colors and a blog list, editable live on the page.",
   "keywords": [
     "cms",

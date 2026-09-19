@@ -1,4 +1,4 @@
-import { AdminAccountPanel, AdminLoginGate, DoraProvider, EditableBlog, ThemeEditor, useDora } from "@dora-cms/react";
+import { AdminAccountPanel, AdminLoginGate, DoraHead, DoraProvider, EditableBlog, SeoFields, ThemeEditor, useDora } from "@dora-cms/react";
 import { About } from "./sections/About";
 import { FAQ } from "./sections/FAQ";
 import { Footer } from "./sections/Footer";
@@ -41,13 +41,19 @@ function Site() {
       {isAdminMode && isAuthenticated && (
         <div className="demo-banner demo-banner--admin">
           Admin mode — edit text by clicking it, swap images below them, drag blog posts by their
-          handle to reorder, and open "Theme colors" or "Account" in the corners to change the
-          palette or your password.
+          handle to reorder, and open "Theme colors", "Account", or "SEO" in the corners to change
+          the palette, your password, or this page's search/share metadata.
         </div>
       )}
 
+      <DoraHead
+        title="Maison Dora — Artisan Bakery"
+        description="Sourdough, pastry, and coffee baked fresh every morning in the heart of town."
+        ogImage=""
+      />
       <ThemeEditor variables={THEME_VARIABLES} />
       <AdminAccountPanel />
+      <SeoFields />
 
       <Topbar />
       <Navbar />

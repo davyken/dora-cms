@@ -15,6 +15,7 @@ import {
   EditableBlog,
   AdminLoginGate,
   AdminAccountPanel,
+  SeoFields,
 } from "@dora-cms/react";
 
 function App() {
@@ -23,6 +24,7 @@ function App() {
       <AdminLoginGate>
         <ThemeEditor variables={[{ key: "primary", label: "Brand color", default: "#4f46e5" }]} />
         <AdminAccountPanel />
+        <SeoFields />
         <EditableImage id="logo" src="/logo.png" alt="Logo" />
         <Editable id="hero-title" as="h1">Welcome to Our Bakery</Editable>
         <EditableBlog />

@@ -8,6 +8,7 @@ import { authRouter } from "./routes/auth.js";
 import { blogRouter } from "./routes/blog.js";
 import { contentRouter } from "./routes/content.js";
 import { uploadRouter } from "./routes/upload.js";
+import { LOCAL_UPLOAD_DEFAULT_DIR } from "./lib/storage.js";
 
 const allowedOrigins = env.ALLOWED_ORIGINS.split(",")
   .map((o) => o.trim())
@@ -42,6 +43,13 @@ export function createApp(): Express {
   });
 
   app.get("/health", (_req, res) => res.json({ ok: true }));
+
+  // Only relevant with STORAGE_DRIVER=local (Render or local dev — see the
+  // warning on LocalDiskStorageAdapter in lib/storage.ts). A no-op mount
+  // for every other driver, since nothing ever writes into this directory.
+  if (env.STORAGE_DRIVER === "local") {
+    app.use("/uploads", express.static(env.LOCAL_UPLOAD_DIR ?? LOCAL_UPLOAD_DEFAULT_DIR));
+  }
 
   app.use("/api/sites/:siteId/auth", authRouter);
   app.use("/api/sites/:siteId/content", contentRouter);

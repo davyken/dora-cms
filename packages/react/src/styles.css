@@ -502,3 +502,119 @@
   font-size: 12px;
   margin: 0;
 }
+
+/* ---------- SeoFields ---------- */
+.dora-seo-fields {
+  position: fixed;
+  top: 16px;
+  left: 16px;
+  z-index: 9999;
+  font-family: var(--dora-admin-font);
+}
+.dora-seo-fields-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--dora-admin-ink);
+  color: #fff;
+  border: none;
+  border-radius: 999px;
+  padding: 10px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  box-shadow: var(--dora-admin-shadow);
+  transition: background-color 0.15s ease;
+}
+.dora-seo-fields-toggle:hover {
+  background: #27272a;
+}
+.dora-seo-fields--open .dora-seo-fields-toggle {
+  border-radius: var(--dora-admin-radius) var(--dora-admin-radius) 0 0;
+  width: 100%;
+}
+.dora-seo-fields-panel {
+  background: var(--dora-admin-surface);
+  border: 1px solid var(--dora-admin-border);
+  border-top: none;
+  border-radius: 0 0 var(--dora-admin-radius) var(--dora-admin-radius);
+  box-shadow: var(--dora-admin-shadow);
+  padding: 16px;
+  width: 280px;
+  max-width: calc(100vw - 32px);
+  max-height: calc(100vh - 80px);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.dora-seo-fields-heading {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--dora-admin-ink);
+}
+.dora-seo-fields-panel label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--dora-admin-muted);
+}
+.dora-seo-fields-panel input[type="text"],
+.dora-seo-fields-panel textarea {
+  font-family: inherit;
+  font-size: 14px;
+  padding: 8px 10px;
+  border: 1px solid var(--dora-admin-border);
+  border-radius: 8px;
+  outline: none;
+  color: var(--dora-admin-ink);
+  resize: vertical;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.dora-seo-fields-panel input:focus,
+.dora-seo-fields-panel textarea:focus {
+  border-color: var(--dora-admin-accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--dora-admin-accent) 18%, transparent);
+}
+.dora-seo-fields-og-preview {
+  width: 100%;
+  max-height: 120px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid var(--dora-admin-border);
+}
+.dora-seo-fields-og-actions {
+  display: flex;
+  gap: 8px;
+}
+.dora-seo-fields-og-actions button {
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 8px;
+  background: var(--dora-admin-accent);
+  color: #fff;
+  cursor: pointer;
+  transition: background-color 0.15s ease, opacity 0.15s ease;
+}
+.dora-seo-fields-og-actions button:hover:not(:disabled) {
+  background: var(--dora-admin-accent-hover);
+}
+.dora-seo-fields-og-actions button:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+.dora-seo-fields-og-actions button:last-child {
+  background: transparent;
+  color: var(--dora-admin-danger);
+  border: 1px solid var(--dora-admin-border);
+}
+.dora-seo-fields-error {
+  color: var(--dora-admin-danger);
+  font-size: 12px;
+  margin: 0;
+}
