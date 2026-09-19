@@ -3,6 +3,7 @@ import rateLimit from "express-rate-limit";
 import multer from "multer";
 import { requireAuth } from "../middleware/auth.js";
 import { UnsupportedFileTypeError } from "../lib/errors.js";
+import { rateLimitStore } from "../lib/rateLimitStore.js";
 import { getStorageAdapter } from "../lib/storage.js";
 
 const ALLOWED_MIME_TYPES = new Set(["image/png", "image/jpeg", "image/webp", "image/gif"]);
@@ -24,6 +25,7 @@ const uploadLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   limit: 30,
   skip: () => process.env.NODE_ENV === "test",
+  store: rateLimitStore(),
 });
 
 export const uploadRouter = Router({ mergeParams: true });

@@ -4,6 +4,7 @@ import rateLimit from "express-rate-limit";
 import jwt from "jsonwebtoken";
 import { z } from "zod";
 import { env } from "../env.js";
+import { rateLimitStore } from "../lib/rateLimitStore.js";
 import { requireAuth } from "../middleware/auth.js";
 import { SiteAuth } from "../models/SiteAuth.js";
 
@@ -18,6 +19,7 @@ const loginLimiter = rateLimit({
   legacyHeaders: false,
   message: { message: "Too many login attempts. Try again later." },
   skip: () => process.env.NODE_ENV === "test",
+  store: rateLimitStore(),
 });
 
 const changePasswordLimiter = rateLimit({
@@ -26,6 +28,7 @@ const changePasswordLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   skip: () => process.env.NODE_ENV === "test",
+  store: rateLimitStore(),
 });
 
 const loginSchema = z.object({ password: z.string().min(1).max(200) });

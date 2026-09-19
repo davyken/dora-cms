@@ -1,5 +1,7 @@
 # dora-cms
 
+[![Test](https://github.com/davyken/dora-cms/actions/workflows/test.yml/badge.svg)](https://github.com/davyken/dora-cms/actions/workflows/test.yml)
+
 Drop-in, self-hosted content editing for React sites. Wrap your existing components, and your
 client can edit text, images, theme colors, and a blog — directly on the live page — without
 Git, a CMS account, or a rebuild.

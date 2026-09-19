@@ -22,6 +22,12 @@ const envSchema = z.object({
   S3_SECRET_ACCESS_KEY: z.string().min(1, "S3_SECRET_ACCESS_KEY is required for image uploads"),
   S3_ENDPOINT: z.string().optional(),
   S3_PUBLIC_URL_BASE: z.string().optional(),
+  // Optional. Rate limiting defaults to an in-memory store, which is correct
+  // for a single server instance but silently under-enforces the moment a
+  // deployment scales past one (each instance counts independently). Set
+  // this to share rate-limit counters across instances via Redis instead —
+  // see src/lib/rateLimitStore.ts.
+  REDIS_URL: z.string().optional(),
 });
 
 function loadEnv() {

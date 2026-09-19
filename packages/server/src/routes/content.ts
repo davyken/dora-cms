@@ -17,8 +17,15 @@ function siteIdOf(params: Record<string, string>): string {
 }
 
 // Public — the live site needs to read content without an admin session.
+// Cached at the edge for anonymous visitors (the overwhelming majority of
+// requests to this route) so a popular site doesn't hit Mongo on every
+// pageview; skipped whenever a request carries a token, so an admin who
+// just saved a change and reloads always sees their own edit immediately.
 contentRouter.get("/", async (req, res, next) => {
   try {
+    if (!req.headers.authorization) {
+      res.set("Cache-Control", "public, max-age=30, stale-while-revalidate=300");
+    }
     const items = await ContentItem.find({ siteId: siteIdOf(req.params) }).lean();
     res.json({
       items: items.map((i) => ({

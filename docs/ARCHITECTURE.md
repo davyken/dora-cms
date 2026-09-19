@@ -126,6 +126,16 @@ Mongo (keyed by `siteId`), which takes precedence over the env var from then on.
 as the fallback/recovery path (e.g. if a client forgets their password, the developer can always
 reset via a new hash and env var, which regains control since the DB record can be cleared).
 
+**Why the public read routes (`GET /content`, `GET /blog`) send `Cache-Control`:** every visitor
+to every site hits these routes, and without caching each pageview would be a direct MongoDB read
+— fine for a handful of sites, not fine at real scale. Both send
+`Cache-Control: public, max-age=30, stale-while-revalidate=300` for anonymous requests, letting
+Vercel's/Cloudflare's edge cache absorb repeat reads instead of the database. The header is
+omitted whenever the request carries an `Authorization` header, so the one visitor who could
+actually be confused by staleness — the client who just saved an edit and reloaded the page —
+always gets a fresh read of their own change; everyone else tolerates up to ~30s of staleness in
+exchange for the backend not falling over under traffic.
+
 ## 5. Deployment
 
 The same backend code deploys two ways, depending on where the developer's site lives:
@@ -157,7 +167,13 @@ any route.
 - **A JWT is scoped to one `siteId`.** `requireAuth` checks the token's `siteId` claim matches the
   URL's `:siteId` — without this, a token issued for one client's site could be replayed against
   another site hosted on the same backend instance.
-- **Login is rate-limited** (10 attempts / 15 min per IP) to slow down password guessing.
+- **Login, password-change, and upload are rate-limited** (10 attempts / 15 min for auth, 30 / 15
+  min for uploads, per IP). The store defaults to in-memory, which only counts requests seen by
+  the current process — correct for a single instance, but each additional instance behind a load
+  balancer gets its own counter, so the *effective* limit quietly multiplies by instance count.
+  Set `REDIS_URL` (`src/lib/rateLimitStore.ts`) to share counters across instances via Redis
+  instead; unset (the default) keeps the zero-dependency in-memory store for the common
+  single-instance case.
 - **Every write is validated with `zod`, then type-specific sanitization is applied server-side**
   before it ever reaches the database:
   - `text` values are stripped of all HTML tags.

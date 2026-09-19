@@ -47,9 +47,14 @@ function serialize(post: Pick<BlogPostDoc, "_id" | "title" | "slug" | "body" | "
   };
 }
 
-// Public — visitors read blog posts without an admin session.
+// Public — visitors read blog posts without an admin session. Cached at the
+// edge the same way and for the same reason as GET /content — see the
+// comment there.
 blogRouter.get("/", async (req, res, next) => {
   try {
+    if (!req.headers.authorization) {
+      res.set("Cache-Control", "public, max-age=30, stale-while-revalidate=300");
+    }
     const posts = await BlogPost.find({ siteId: siteIdOf(req.params) })
       .sort({ order: 1, createdAt: -1 })
       .lean();

@@ -5,31 +5,26 @@ scale), ranked by leverage. Nothing here is scoped out on purpose (that list liv
 [ARCHITECTURE.md §7](./ARCHITECTURE.md#7-whats-deliberately-not-in-v1)) — these are things worth
 doing, not yet done.
 
-## High-leverage (reliability under real traffic / real trust)
+## High-leverage (reliability under real traffic / real trust) — done
 
-1. **CI on every push/PR.** Only [`.github/workflows/publish.yml`](../.github/workflows/publish.yml)
-   exists today, and it's a manual `workflow_dispatch` for releases. There's no workflow that runs
-   typecheck + tests automatically on push or PR — meaning an external contributor's PR currently
-   ships with zero automated signal, and nothing stops a broken commit from landing on `main`.
-   Add `.github/workflows/test.yml` (matrix over the workspaces, `npm run typecheck` +
-   `npm test`) and put the resulting badge in the README. This is the single biggest credibility
-   gap for a package other people are expected to trust and contribute to.
+1. **CI on every push/PR.** ✅ [`.github/workflows/test.yml`](../.github/workflows/test.yml) runs
+   `npm run typecheck`, `npm test`, and `npm run build` across every workspace on every push to
+   `main` and every PR. Badge is in the root README.
 
-2. **No HTTP caching on `GET /content`.** Every visitor to every site currently hits MongoDB
-   directly for the same data, with no `Cache-Control` or `ETag`. A site that gets real traffic
-   will hammer its own backend for identical responses. Add something like
-   `Cache-Control: public, max-age=30, stale-while-revalidate=300` to
-   `packages/server/src/routes/content.ts`'s `GET /` handler — this lets Vercel's/Cloudflare's
-   edge cache the response, cutting DB load dramatically for zero cost to freshness (content
-   changes are rare relative to pageviews, and staleness is bounded to seconds). This is the
-   single biggest "won't fall over under real traffic" fix available right now.
+2. **No HTTP caching on `GET /content`.** ✅ `GET /content` and `GET /blog`
+   (`packages/server/src/routes/content.ts`, `blog.ts`) now send
+   `Cache-Control: public, max-age=30, stale-while-revalidate=300` for anonymous requests, letting
+   Vercel's/Cloudflare's edge cache absorb repeat reads. Skipped whenever the request carries an
+   `Authorization` header, so an admin who just saved always sees their own edit immediately — see
+   [ARCHITECTURE.md §4](./ARCHITECTURE.md#4-architecture).
 
-3. **Rate limiters use `express-rate-limit`'s default in-memory store.** This works correctly for
-   exactly one server instance. It silently stops enforcing correctly the moment a developer scales
-   their Render/Vercel backend past one instance (each instance gets its own counter) — which is
-   precisely the traffic level where rate limiting matters most. Either document this limit
-   explicitly (so nobody assumes protection they don't have) or wire an optional Redis-backed
-   store (`rate-limit-redis`) behind an env var for anyone scaling past a single instance.
+3. **Rate limiters used only an in-memory store.** ✅ `packages/server/src/lib/rateLimitStore.ts`
+   wires an optional Redis-backed store (`rate-limit-redis` + `ioredis`) behind a new `REDIS_URL`
+   env var. Unset (the default) keeps the zero-dependency in-memory store for the common
+   single-instance case; set it once a deployment scales past one instance. See
+   [ARCHITECTURE.md §6](./ARCHITECTURE.md#6-security).
+
+## Adoption-friction (fewer setup failures, more installs) — not started
 
 ## Adoption-friction (fewer setup failures, more installs)
 
@@ -48,5 +43,6 @@ doing, not yet done.
 
 ## Status
 
-Not started. `docs/ARCHITECTURE.md` and `docs/PUBLISHING.md` are the source of truth for what
-*is* built; this file is the source of truth for what's next.
+Items 1–3 (high-leverage) are done. Items 4–5 (adoption-friction) are not started.
+`docs/ARCHITECTURE.md` and `docs/PUBLISHING.md` are the source of truth for what *is* built; this
+file is the source of truth for what's next.

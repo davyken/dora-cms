@@ -7,6 +7,18 @@ describe("GET /api/sites/:siteId/blog", () => {
     expect(res.status).toBe(200);
     expect(res.body.posts).toEqual([]);
   });
+
+  it("sends a public Cache-Control header for an anonymous request", async () => {
+    const res = await agent().get(`/api/sites/${uniqueSiteId()}/blog`);
+    expect(res.headers["cache-control"]).toBe("public, max-age=30, stale-while-revalidate=300");
+  });
+
+  it("sends no Cache-Control header for an authenticated request", async () => {
+    const siteId = uniqueSiteId();
+    const token = await loginAndGetToken(siteId);
+    const res = await agent().get(`/api/sites/${siteId}/blog`).set("Authorization", `Bearer ${token}`);
+    expect(res.headers["cache-control"]).toBeUndefined();
+  });
 });
 
 describe("POST /api/sites/:siteId/blog", () => {
