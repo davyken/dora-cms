@@ -36,6 +36,8 @@ function App() {
   deployment model, and the security decisions behind every route.
 - [docs/PUBLISHING.md](./docs/PUBLISHING.md) — how these packages get published to npm, and
   exactly what (and what doesn't) happen when a developer runs `npm install`.
+- [docs/ROADMAP.md](./docs/ROADMAP.md) — what's next, ranked by leverage: reliability under real
+  traffic, CI, and adoption-friction fixes.
 
 ## Packages
 
