@@ -54,10 +54,11 @@ Two things already set up in `package.json` that make this work without extra fl
   tests, and config never end up in the published tarball. Run `npm pack --dry-run` in a package
   directory any time to see exactly what would ship.
 
-### Provenance (recommended, not yet wired up)
+### Provenance (wired up via GitHub Actions)
 
-If you publish from GitHub Actions (not your laptop), add `--provenance` to the `npm publish`
-call:
+[`.github/workflows/publish.yml`](../.github/workflows/publish.yml) is a manual
+(`workflow_dispatch`) workflow: pick a package (`react`, `server`, or `cli`) from the Actions tab,
+and it installs, typechecks, tests, builds, then runs
 
 ```bash
 npm publish --provenance --access public
@@ -65,9 +66,17 @@ npm publish --provenance --access public
 
 This cryptographically links the published package to the exact commit and workflow run that
 built it — npm shows a "Provenance" badge on the package page, and it's one of the strongest
-signals of supply-chain trust a package can carry in 2026. It requires OIDC, which means it has
-to run in CI (GitHub Actions with `id-token: write` permission) — it can't be done from a local
-`npm publish`. Worth setting up once you have a CI workflow; not required to publish at all.
+signals of supply-chain trust a package can carry in 2026. It requires OIDC (`id-token: write`,
+already set in the workflow's `permissions`), which is why it has to run in CI rather than from a
+local `npm publish`.
+
+**One-time setup before the workflow can run:** create an npm **granular access token** scoped to
+publish the `@dora-cms` packages, then add it as a repository secret named `NPM_TOKEN` (Settings →
+Secrets and variables → Actions). The workflow also targets a `npm-publish` GitHub Environment —
+create one (Settings → Environments) if you want a manual approval gate before publishes go out;
+otherwise remove the `environment:` line to publish immediately on dispatch. Publishing straight
+from your laptop with a local `npm publish` still works and skips provenance entirely — the
+workflow is the recommended path, not the only one.
 
 ## 4. What a developer sees when they run `npm install`
 

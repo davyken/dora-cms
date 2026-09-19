@@ -1,0 +1,49 @@
+name: Publish package
+
+on:
+  workflow_dispatch:
+    inputs:
+      package:
+        description: "Which package to publish"
+        required: true
+        type: choice
+        options:
+          - react
+          - server
+          - cli
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    environment: npm-publish
+    env:
+      PKG_DIR: packages/${{ inputs.package }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          registry-url: https://registry.npmjs.org
+
+      - name: Install dependencies (whole workspace)
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck --workspace=${{ env.PKG_DIR }}
+
+      - name: Test
+        run: npm test --workspace=${{ env.PKG_DIR }} --if-present
+
+      - name: Build
+        run: npm run build --workspace=${{ env.PKG_DIR }}
+
+      - name: Publish with provenance
+        working-directory: ${{ env.PKG_DIR }}
+        run: npm publish --provenance --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
