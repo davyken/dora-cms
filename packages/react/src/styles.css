@@ -210,10 +210,36 @@
   border-radius: 8px;
   outline: none;
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  width: 100%;
 }
 .dora-login-form input:focus {
   border-color: var(--dora-admin-accent);
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--dora-admin-accent) 18%, transparent);
+}
+.dora-login-password-field {
+  position: relative;
+}
+.dora-login-password-field input {
+  padding-right: 40px;
+}
+.dora-login-password-toggle {
+  position: absolute;
+  top: 50%;
+  right: 4px;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  font-size: 15px;
+  line-height: 1;
+  padding: 6px;
+  cursor: pointer;
+  border-radius: 6px;
+  opacity: 0.7;
+  transition: opacity 0.15s ease, background-color 0.15s ease;
+}
+.dora-login-password-toggle:hover {
+  opacity: 1;
+  background: #f3f4f6;
 }
 .dora-login-form button {
   font-family: var(--dora-admin-font);
@@ -343,4 +369,136 @@
 }
 .dora-blog-delete:hover {
   background: color-mix(in srgb, var(--dora-admin-danger) 8%, transparent);
+}
+.dora-blog-sortable {
+  position: relative;
+}
+.dora-blog-post-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.dora-blog-post-header h2 {
+  margin: 0;
+}
+.dora-blog-drag-handle {
+  cursor: grab;
+  color: var(--dora-admin-muted);
+  font-size: 16px;
+  line-height: 1;
+  touch-action: none;
+  user-select: none;
+  flex-shrink: 0;
+}
+.dora-blog-drag-handle:active {
+  cursor: grabbing;
+}
+
+/* ---------- AdminAccountPanel ---------- */
+.dora-account-panel {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 9999;
+  font-family: var(--dora-admin-font);
+}
+.dora-account-panel-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--dora-admin-ink);
+  color: #fff;
+  border: none;
+  border-radius: 999px;
+  padding: 10px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  box-shadow: var(--dora-admin-shadow);
+  transition: background-color 0.15s ease;
+}
+.dora-account-panel-toggle:hover {
+  background: #27272a;
+}
+.dora-account-panel--open .dora-account-panel-toggle {
+  border-radius: var(--dora-admin-radius) var(--dora-admin-radius) 0 0;
+  width: 100%;
+}
+.dora-account-panel-form {
+  background: var(--dora-admin-surface);
+  border: 1px solid var(--dora-admin-border);
+  border-top: none;
+  border-radius: 0 0 var(--dora-admin-radius) var(--dora-admin-radius);
+  box-shadow: var(--dora-admin-shadow);
+  padding: 16px;
+  width: 260px;
+  max-width: calc(100vw - 32px);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.dora-account-panel-heading {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--dora-admin-ink);
+}
+.dora-account-panel-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--dora-admin-muted);
+}
+.dora-account-panel-form input[type="password"],
+.dora-account-panel-form input[type="text"] {
+  font-family: inherit;
+  font-size: 14px;
+  padding: 8px 10px;
+  border: 1px solid var(--dora-admin-border);
+  border-radius: 8px;
+  outline: none;
+  color: var(--dora-admin-ink);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.dora-account-panel-form input:focus {
+  border-color: var(--dora-admin-accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--dora-admin-accent) 18%, transparent);
+}
+.dora-account-panel-show-toggle {
+  flex-direction: row !important;
+  align-items: center;
+  gap: 6px !important;
+}
+.dora-account-panel-show-toggle input {
+  margin: 0;
+}
+.dora-account-panel-form > button {
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 9px 12px;
+  border: none;
+  border-radius: 8px;
+  background: var(--dora-admin-accent);
+  color: #fff;
+  cursor: pointer;
+  transition: background-color 0.15s ease, opacity 0.15s ease;
+}
+.dora-account-panel-form > button:hover:not(:disabled) {
+  background: var(--dora-admin-accent-hover);
+}
+.dora-account-panel-form > button:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+.dora-account-panel-error {
+  color: var(--dora-admin-danger);
+  font-size: 12px;
+  margin: 0;
+}
+.dora-account-panel-success {
+  color: #16a34a;
+  font-size: 12px;
+  margin: 0;
 }

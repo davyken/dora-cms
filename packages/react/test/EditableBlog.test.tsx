@@ -95,4 +95,37 @@ describe("EditableBlog", () => {
 
     await waitFor(() => expect(screen.queryByText("First post")).not.toBeInTheDocument());
   });
+
+  it("shows a drag handle per post for an authenticated admin", async () => {
+    setAdminMode(true);
+    seedAuthToken();
+    const secondPost = { id: "2", title: "Second post", slug: "second-post", body: "<p>Body</p>", publishedAt: "now" };
+    installMockFetch({
+      "GET /api/sites/site1/content": () => ({ body: { items: [] } }),
+      "GET /api/sites/site1/blog": () => ({ body: { posts: [samplePost, secondPost] } }),
+    });
+    render(
+      <DoraProvider siteId="site1" apiUrl="http://api.test">
+        <EditableBlog />
+      </DoraProvider>
+    );
+
+    await screen.findByText("First post");
+    expect(screen.getAllByTitle("Drag to reorder")).toHaveLength(2);
+  });
+
+  it("shows no drag handles for a non-admin visitor", async () => {
+    installMockFetch({
+      "GET /api/sites/site1/content": () => ({ body: { items: [] } }),
+      "GET /api/sites/site1/blog": () => ({ body: { posts: [samplePost] } }),
+    });
+    render(
+      <DoraProvider siteId="site1" apiUrl="http://api.test">
+        <EditableBlog />
+      </DoraProvider>
+    );
+
+    await screen.findByText("First post");
+    expect(screen.queryByTitle("Drag to reorder")).not.toBeInTheDocument();
+  });
 });

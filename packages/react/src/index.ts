@@ -4,6 +4,8 @@ export { EditableImage } from "./EditableImage";
 export { EditableBlog } from "./EditableBlog";
 export { ThemeEditor } from "./ThemeEditor";
 export { AdminLoginGate } from "./AdminLoginGate";
+export { AdminAccountPanel } from "./AdminAccountPanel";
+export { DoraApiError } from "./api";
 export type { ContentItem, ContentType, BlogPost, DoraConfig } from "./types";
 export type { DoraProviderProps } from "./DoraProvider";
 export type { EditableProps } from "./Editable";

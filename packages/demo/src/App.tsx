@@ -1,4 +1,4 @@
-import { AdminLoginGate, DoraProvider, EditableBlog, ThemeEditor, useDora } from "@dora-cms/react";
+import { AdminAccountPanel, AdminLoginGate, DoraProvider, EditableBlog, ThemeEditor, useDora } from "@dora-cms/react";
 import { About } from "./sections/About";
 import { FAQ } from "./sections/FAQ";
 import { Footer } from "./sections/Footer";
@@ -20,7 +20,7 @@ const THEME_VARIABLES = [
 
 export function App() {
   return (
-    <DoraProvider siteId={SITE_ID} apiUrl={API_URL}>
+    <DoraProvider siteId={SITE_ID} apiUrl={API_URL} adminPath="/admin">
       <AdminLoginGate>
         <Site />
       </AdminLoginGate>
@@ -34,18 +34,20 @@ function Site() {
   return (
     <div className="page">
       {!isAdminMode && (
-        <a className="demo-banner" href="?edit=true">
+        <a className="demo-banner" href="/admin">
           This is a live dora-cms demo — click here to try editing this page as the site owner
         </a>
       )}
       {isAdminMode && isAuthenticated && (
         <div className="demo-banner demo-banner--admin">
-          Admin mode — edit text by clicking it, swap images below them, and open "Theme colors"
-          in the bottom-right corner to change the palette.
+          Admin mode — edit text by clicking it, swap images below them, drag blog posts by their
+          handle to reorder, and open "Theme colors" or "Account" in the corners to change the
+          palette or your password.
         </div>
       )}
 
       <ThemeEditor variables={THEME_VARIABLES} />
+      <AdminAccountPanel />
 
       <Topbar />
       <Navbar />

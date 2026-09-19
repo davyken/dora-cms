@@ -94,4 +94,62 @@ describe("DoraProvider", () => {
     expect(screen.getByTestId("authenticated")).toHaveTextContent("false");
     expect(window.localStorage.getItem("dora_token")).toBeNull();
   });
+
+  describe("adminPath", () => {
+    it("is in admin mode when the pathname matches adminPath", async () => {
+      window.history.pushState({}, "", "/admin");
+      installMockFetch({
+        "GET /api/sites/site1/content": () => ({ body: { items: [] } }),
+      });
+      render(
+        <DoraProvider siteId="site1" apiUrl="http://api.test" adminPath="/admin">
+          <Probe />
+        </DoraProvider>
+      );
+      await waitFor(() => expect(screen.getByTestId("loading")).toHaveTextContent("false"));
+      expect(screen.getByTestId("admin-mode")).toHaveTextContent("true");
+    });
+
+    it("ignores a matching pathname's trailing slash", async () => {
+      window.history.pushState({}, "", "/admin/");
+      installMockFetch({
+        "GET /api/sites/site1/content": () => ({ body: { items: [] } }),
+      });
+      render(
+        <DoraProvider siteId="site1" apiUrl="http://api.test" adminPath="/admin">
+          <Probe />
+        </DoraProvider>
+      );
+      await waitFor(() => expect(screen.getByTestId("loading")).toHaveTextContent("false"));
+      expect(screen.getByTestId("admin-mode")).toHaveTextContent("true");
+    });
+
+    it("ignores ?edit=true when adminPath is set", async () => {
+      setAdminMode(true);
+      installMockFetch({
+        "GET /api/sites/site1/content": () => ({ body: { items: [] } }),
+      });
+      render(
+        <DoraProvider siteId="site1" apiUrl="http://api.test" adminPath="/admin">
+          <Probe />
+        </DoraProvider>
+      );
+      await waitFor(() => expect(screen.getByTestId("loading")).toHaveTextContent("false"));
+      expect(screen.getByTestId("admin-mode")).toHaveTextContent("false");
+    });
+
+    it("is not in admin mode on an unrelated path", async () => {
+      window.history.pushState({}, "", "/about");
+      installMockFetch({
+        "GET /api/sites/site1/content": () => ({ body: { items: [] } }),
+      });
+      render(
+        <DoraProvider siteId="site1" apiUrl="http://api.test" adminPath="/admin">
+          <Probe />
+        </DoraProvider>
+      );
+      await waitFor(() => expect(screen.getByTestId("loading")).toHaveTextContent("false"));
+      expect(screen.getByTestId("admin-mode")).toHaveTextContent("false");
+    });
+  });
 });

@@ -136,3 +136,96 @@ describe("DELETE /api/sites/:siteId/blog/:id", () => {
     expect(res.status).toBe(404);
   });
 });
+
+describe("PUT /api/sites/:siteId/blog/reorder", () => {
+  it("requires authentication", async () => {
+    const res = await agent()
+      .put(`/api/sites/${uniqueSiteId()}/blog/reorder`)
+      .send({ order: ["000000000000000000000000"] });
+    expect(res.status).toBe(401);
+  });
+
+  it("rejects an empty order array", async () => {
+    const siteId = uniqueSiteId();
+    const token = await loginAndGetToken(siteId);
+    const res = await agent()
+      .put(`/api/sites/${siteId}/blog/reorder`)
+      .set("Authorization", `Bearer ${token}`)
+      .send({ order: [] });
+    expect(res.status).toBe(400);
+  });
+
+  it("reorders posts so the list reflects the given order", async () => {
+    const siteId = uniqueSiteId();
+    const token = await loginAndGetToken(siteId);
+    const create = (title: string) =>
+      agent()
+        .post(`/api/sites/${siteId}/blog`)
+        .set("Authorization", `Bearer ${token}`)
+        .send({ title, body: "<p>Body</p>" })
+        .then((r) => r.body);
+
+    const first = await create("First");
+    const second = await create("Second");
+    const third = await create("Third");
+
+    // Default order is newest-first: Third, Second, First.
+    const before = await agent().get(`/api/sites/${siteId}/blog`);
+    expect(before.body.posts.map((p: { title: string }) => p.title)).toEqual(["Third", "Second", "First"]);
+
+    const reorder = await agent()
+      .put(`/api/sites/${siteId}/blog/reorder`)
+      .set("Authorization", `Bearer ${token}`)
+      .send({ order: [first.id, second.id, third.id] });
+    expect(reorder.status).toBe(204);
+
+    const after = await agent().get(`/api/sites/${siteId}/blog`);
+    expect(after.body.posts.map((p: { title: string }) => p.title)).toEqual(["First", "Second", "Third"]);
+  });
+
+  it("a newly created post still sorts first even after a manual reorder", async () => {
+    const siteId = uniqueSiteId();
+    const token = await loginAndGetToken(siteId);
+    const create = (title: string) =>
+      agent()
+        .post(`/api/sites/${siteId}/blog`)
+        .set("Authorization", `Bearer ${token}`)
+        .send({ title, body: "<p>Body</p>" })
+        .then((r) => r.body);
+
+    const first = await create("First");
+    const second = await create("Second");
+
+    await agent()
+      .put(`/api/sites/${siteId}/blog/reorder`)
+      .set("Authorization", `Bearer ${token}`)
+      .send({ order: [first.id, second.id] });
+
+    await create("Third");
+
+    const res = await agent().get(`/api/sites/${siteId}/blog`);
+    expect(res.body.posts.map((p: { title: string }) => p.title)).toEqual(["Third", "First", "Second"]);
+  });
+
+  it("does not let a reorder move another site's posts", async () => {
+    const siteA = uniqueSiteId("a");
+    const siteB = uniqueSiteId("b");
+    const tokenA = await loginAndGetToken(siteA);
+    const tokenB = await loginAndGetToken(siteB);
+
+    const postA = await agent()
+      .post(`/api/sites/${siteA}/blog`)
+      .set("Authorization", `Bearer ${tokenA}`)
+      .send({ title: "Site A post", body: "<p>Body</p>" })
+      .then((r) => r.body);
+
+    const res = await agent()
+      .put(`/api/sites/${siteB}/blog/reorder`)
+      .set("Authorization", `Bearer ${tokenB}`)
+      .send({ order: [postA.id] });
+    expect(res.status).toBe(204); // no-op, not an error — see routes/blog.ts
+
+    const check = await agent().get(`/api/sites/${siteA}/blog`);
+    expect(check.body.posts[0].title).toBe("Site A post");
+  });
+});

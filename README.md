@@ -5,13 +5,22 @@ client can edit text, images, theme colors, and a blog — directly on the live 
 Git, a CMS account, or a rebuild.
 
 ```jsx
-import { DoraProvider, Editable, EditableImage, ThemeEditor, EditableBlog, AdminLoginGate } from "@dora-cms/react";
+import {
+  DoraProvider,
+  Editable,
+  EditableImage,
+  ThemeEditor,
+  EditableBlog,
+  AdminLoginGate,
+  AdminAccountPanel,
+} from "@dora-cms/react";
 
 function App() {
   return (
-    <DoraProvider siteId="my-site" apiUrl="https://api.yoursite.com">
+    <DoraProvider siteId="my-site" apiUrl="https://api.yoursite.com" adminPath="/admin">
       <AdminLoginGate>
         <ThemeEditor variables={[{ key: "primary", label: "Brand color", default: "#4f46e5" }]} />
+        <AdminAccountPanel />
         <EditableImage id="logo" src="/logo.png" alt="Logo" />
         <Editable id="hero-title" as="h1">Welcome to Our Bakery</Editable>
         <EditableBlog />
@@ -56,8 +65,9 @@ npm run build -w @dora-cms/react
 ```
 
 Then in your site: `npm install @dora-cms/react` (from a published version, or `npm link` locally
-during development), point `apiUrl` at `http://localhost:4000`, and visit your site with
-`?edit=true`.
+during development), point `apiUrl` at `http://localhost:4000`, and visit `/admin` on your site
+(or `?edit=true` if you didn't set `adminPath`). Note that a static host needs an SPA rewrite for
+`/admin` to resolve — see [`packages/demo/vercel.json`](./packages/demo/vercel.json).
 
 ## Deploying
 

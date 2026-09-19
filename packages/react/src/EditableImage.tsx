@@ -1,4 +1,5 @@
 import React, { useRef, useState } from "react";
+import { compressImage } from "./compressImage";
 import { useDora } from "./DoraProvider";
 
 export interface EditableImageProps {
@@ -51,7 +52,8 @@ export function EditableImage({ id, src, alt, className }: EditableImageProps) {
     setUploading(true);
     setError(null);
     try {
-      const { url } = await api.uploadImage(file);
+      const uploadable = await compressImage(file);
+      const { url } = await api.uploadImage(uploadable);
       await setContentValue(id, "image", url);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Upload failed");

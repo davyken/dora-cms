@@ -50,7 +50,9 @@ function serialize(post: Pick<BlogPostDoc, "_id" | "title" | "slug" | "body" | "
 // Public — visitors read blog posts without an admin session.
 blogRouter.get("/", async (req, res, next) => {
   try {
-    const posts = await BlogPost.find({ siteId: siteIdOf(req.params) }).sort({ createdAt: -1 }).lean();
+    const posts = await BlogPost.find({ siteId: siteIdOf(req.params) })
+      .sort({ order: 1, createdAt: -1 })
+      .lean();
     res.json({ posts: posts.map(serialize) });
   } catch (err) {
     next(err);
@@ -74,8 +76,39 @@ blogRouter.post("/", requireAuth, async (req, res, next) => {
     const body = sanitizeHtml(parsed.data.body, sanitizeHtml.defaults);
     const slug = await uniqueSlug(siteId, title);
 
-    const post = await BlogPost.create({ siteId, title, body, slug, coverImage: parsed.data.coverImage });
+    // New posts sort first by default (like a normal blog) without
+    // disturbing any order the client has manually dragged into place.
+    const lowest = await BlogPost.findOne({ siteId }).sort({ order: 1 }).lean();
+    const order = lowest ? lowest.order - 1 : 0;
+
+    const post = await BlogPost.create({ siteId, title, body, slug, order, coverImage: parsed.data.coverImage });
     res.status(201).json(serialize(post));
+  } catch (err) {
+    next(err);
+  }
+});
+
+const reorderSchema = z.object({
+  order: z.array(z.string()).min(1).max(1000),
+});
+
+// Persists a manual drag-and-drop reorder. Each id's new position is its
+// index in the array; ids that don't belong to this site are silently
+// filtered by the siteId match on each update rather than erroring, since
+// a stale client-side list is a normal race, not an attack.
+blogRouter.put("/reorder", requireAuth, async (req, res, next) => {
+  try {
+    const parsed = reorderSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json({ message: "order must be a non-empty array of post ids" });
+    }
+    const siteId = siteIdOf(req.params);
+    await BlogPost.bulkWrite(
+      parsed.data.order.map((id, index) => ({
+        updateOne: { filter: { _id: id, siteId }, update: { order: index } },
+      }))
+    );
+    res.status(204).end();
   } catch (err) {
     next(err);
   }

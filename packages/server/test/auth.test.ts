@@ -57,3 +57,69 @@ describe("token scoping", () => {
     expect(res.status).toBe(403);
   });
 });
+
+describe("PUT /api/sites/:siteId/auth/password", () => {
+  it("requires authentication", async () => {
+    const res = await agent()
+      .put(`/api/sites/${uniqueSiteId()}/auth/password`)
+      .send({ currentPassword: TEST_ADMIN_PASSWORD, newPassword: "a-new-password" });
+    expect(res.status).toBe(401);
+  });
+
+  it("rejects the wrong current password", async () => {
+    const siteId = uniqueSiteId();
+    const token = await loginAndGetToken(siteId);
+    const res = await agent()
+      .put(`/api/sites/${siteId}/auth/password`)
+      .set("Authorization", `Bearer ${token}`)
+      .send({ currentPassword: "wrong-current", newPassword: "a-new-password" });
+    expect(res.status).toBe(401);
+  });
+
+  it("rejects a new password shorter than 8 characters", async () => {
+    const siteId = uniqueSiteId();
+    const token = await loginAndGetToken(siteId);
+    const res = await agent()
+      .put(`/api/sites/${siteId}/auth/password`)
+      .set("Authorization", `Bearer ${token}`)
+      .send({ currentPassword: TEST_ADMIN_PASSWORD, newPassword: "short" });
+    expect(res.status).toBe(400);
+  });
+
+  it("changes the password, and old/new credentials swap validity afterward", async () => {
+    const siteId = uniqueSiteId();
+    const token = await loginAndGetToken(siteId);
+
+    const change = await agent()
+      .put(`/api/sites/${siteId}/auth/password`)
+      .set("Authorization", `Bearer ${token}`)
+      .send({ currentPassword: TEST_ADMIN_PASSWORD, newPassword: "a-brand-new-password" });
+    expect(change.status).toBe(204);
+
+    const oldLogin = await agent()
+      .post(`/api/sites/${siteId}/auth/login`)
+      .send({ password: TEST_ADMIN_PASSWORD });
+    expect(oldLogin.status).toBe(401);
+
+    const newLogin = await agent()
+      .post(`/api/sites/${siteId}/auth/login`)
+      .send({ password: "a-brand-new-password" });
+    expect(newLogin.status).toBe(200);
+  });
+
+  it("scopes password changes to one site — other sites keep the original password", async () => {
+    const siteA = uniqueSiteId("a");
+    const siteB = uniqueSiteId("b");
+    const tokenA = await loginAndGetToken(siteA);
+
+    await agent()
+      .put(`/api/sites/${siteA}/auth/password`)
+      .set("Authorization", `Bearer ${tokenA}`)
+      .send({ currentPassword: TEST_ADMIN_PASSWORD, newPassword: "site-a-only-password" });
+
+    const siteBLogin = await agent()
+      .post(`/api/sites/${siteB}/auth/login`)
+      .send({ password: TEST_ADMIN_PASSWORD });
+    expect(siteBLogin.status).toBe(200);
+  });
+});

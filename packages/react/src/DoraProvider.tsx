@@ -19,11 +19,22 @@ const DoraContext = createContext<DoraContextValue | null>(null);
 
 export interface DoraProviderProps extends DoraConfig {
   children: React.ReactNode;
-  /** Query param that puts the page into admin mode, e.g. ?edit=true. Defaults to "edit". */
+  /**
+   * Query param that puts the page into admin mode, e.g. ?edit=true.
+   * Ignored when `adminPath` is set. Defaults to "edit".
+   */
   adminParam?: string;
+  /**
+   * Path that puts the page into admin mode instead of a query param, e.g.
+   * "/admin" — so the client visits yoursite.com/admin instead of
+   * yoursite.com/?edit=true. Requires your host to serve index.html for
+   * that path too (an SPA fallback/rewrite), since there's no real page
+   * there — e.g. a Vercel `rewrites` rule.
+   */
+  adminPath?: string;
 }
 
-export function DoraProvider({ children, siteId, apiUrl, adminParam = "edit" }: DoraProviderProps) {
+export function DoraProvider({ children, siteId, apiUrl, adminParam = "edit", adminPath }: DoraProviderProps) {
   const config = useMemo(() => ({ siteId, apiUrl }), [siteId, apiUrl]);
   const api = useMemo(() => createDoraApi(config), [config]);
 
@@ -33,8 +44,12 @@ export function DoraProvider({ children, siteId, apiUrl, adminParam = "edit" }: 
 
   const isAdminMode = useMemo(() => {
     if (typeof window === "undefined") return false;
+    if (adminPath) {
+      const path = window.location.pathname.replace(/\/$/, "");
+      return path === adminPath.replace(/\/$/, "");
+    }
     return new URLSearchParams(window.location.search).get(adminParam) === "true";
-  }, [adminParam]);
+  }, [adminParam, adminPath]);
 
   useEffect(() => {
     setIsAuthenticated(api.isAuthenticated());

@@ -10,6 +10,7 @@ import { useDora } from "./DoraProvider";
 export function AdminLoginGate({ children }: { children: React.ReactNode }) {
   const { isAdminMode, isAuthenticated, login } = useDora();
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
@@ -32,14 +33,26 @@ export function AdminLoginGate({ children }: { children: React.ReactNode }) {
     <div className="dora-login-gate">
       <form onSubmit={handleSubmit} className="dora-login-form">
         <h2>Site admin login</h2>
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          autoFocus
-          autoComplete="current-password"
-        />
+        <div className="dora-login-password-field">
+          <input
+            type={showPassword ? "text" : "password"}
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            autoFocus
+            autoComplete="current-password"
+          />
+          <button
+            type="button"
+            className="dora-login-password-toggle"
+            aria-label={showPassword ? "Hide password" : "Show password"}
+            aria-pressed={showPassword}
+            onClick={() => setShowPassword((prev) => !prev)}
+            tabIndex={-1}
+          >
+            {showPassword ? "🙈" : "👁"}
+          </button>
+        </div>
         <button type="submit" disabled={submitting || !password}>
           {submitting ? "Signing in…" : "Sign in"}
         </button>

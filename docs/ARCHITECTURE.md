@@ -50,16 +50,20 @@ already recognize, not a separate dashboard I have to learn.
 4. Run the password-hash helper once and set it as an env var:
    `npm run hash-password -- "the-clients-password"`.
 5. Deploy the site as normal. To a regular visitor, nothing looks different.
-6. Give the client a link like `https://yoursite.com/?edit=true` plus the password.
+6. Give the client a link like `https://yoursite.com/admin` (or `?edit=true`, if `adminPath`
+   wasn't set) plus the password.
 
 ### Client (ongoing, no technical steps)
 
-1. Opens the edit link, sees a login form, enters the password.
+1. Opens the edit link, sees a login form (with a show/hide toggle on the password field), enters
+   the password.
 2. Every editable region now shows a subtle outline. Clicking text edits it in place; clicking an
    image lets them upload a replacement; the theme panel lets them pick colors; the blog section
-   lets them add, edit, or delete posts.
+   lets them add, edit, delete, or drag-to-reorder posts by a handle on each one.
 3. Every change saves immediately and is live for every visitor — no rebuild, no redeploy, no
    developer involvement.
+4. From the account panel, the client can change their own admin password at any time — no need
+   to ask the developer to regenerate and redeploy a new hash.
 
 ### What the client can and can't do
 
@@ -69,7 +73,9 @@ already recognize, not a separate dashboard I have to learn.
 | Swap an existing image (logo, hero image, ...) | Yes (`<EditableImage>`) |
 | Change theme colors | Yes (`<ThemeEditor>`) |
 | Add/edit/delete blog posts | Yes (`<EditableBlog>`) — the one place clients can add brand-new content, because a post's shape (title/body/cover image) is fixed by the developer |
-| Move, resize, or freely reposition boxes on the page | **No** — this is a full visual page-builder (Webflow/Builder.io territory) and was explicitly scoped out of v1 as a multi-month undertaking; the components here are content editors, not a layout editor |
+| Reorder blog posts | Yes — drag by the handle on each post; the new order is saved immediately |
+| Change their own admin password | Yes (`<AdminAccountPanel>`) — no developer involvement needed |
+| Move, resize, or freely reposition boxes on the page | **No** — this is a full visual page-builder (Webflow/Builder.io territory) and was explicitly scoped out of v1 as a multi-month undertaking; drag-and-drop here is limited to reordering existing lists (like blog posts), not freeform layout — see §7 |
 | Add an entirely new section that didn't exist in the code | **No** — only the developer defines what's editable |
 
 ## 4. Architecture
@@ -78,10 +84,12 @@ already recognize, not a separate dashboard I have to learn.
 dora-cms/
   packages/
     react/    @dora-cms/react — <Editable>, <EditableImage>, <ThemeEditor>, <EditableBlog>,
-              <AdminLoginGate>, <DoraProvider>. Pure UI + a thin fetch client. No backend
-              code lives here.
+              <AdminLoginGate>, <AdminAccountPanel>, <DoraProvider>. Pure UI + a thin fetch
+              client. No backend code lives here.
     server/   @dora-cms/server — Express API: content, blog, upload, auth routes. One
               codebase, two entry points (see §5).
+    cli/      @dora-cms/cli — `npx @dora-cms/cli init` interactively generates the backend's
+              `.env` (secrets, password hash, storage config).
 ```
 
 **Why one backend, two entry points:** a developer's deploy target (Vercel serverless vs. a
@@ -107,10 +115,16 @@ hit MongoDB's 16MB document ceiling awkwardly. Uploaded images go to S3-compatib
 resulting URL is stored in Mongo, alongside the text/color content.
 
 **Single-tenant-per-deployment auth:** there's no multi-user account system. Each developer runs
-their own backend instance with one admin password (via `DORA_ADMIN_PASSWORD_HASH`), matching how
-each developer already self-hosts their own instance for their own client(s). This kept v1 small
-on purpose — a multi-tenant user/roles system is a legitimate future addition, not a v1
-requirement.
+their own backend instance with one admin password, matching how each developer already
+self-hosts their own instance for their own client(s). This kept v1 small on purpose — a
+multi-tenant user/roles system is a legitimate future addition, not a v1 requirement.
+
+**Password bootstrap vs. self-service change:** `DORA_ADMIN_PASSWORD_HASH` is the *bootstrap*
+password — set once via `npm run hash-password` before first deploy. Once the client changes
+their password from `<AdminAccountPanel>`, the new hash is written to a `SiteAuth` document in
+Mongo (keyed by `siteId`), which takes precedence over the env var from then on. The env var stays
+as the fallback/recovery path (e.g. if a client forgets their password, the developer can always
+reset via a new hash and env var, which regains control since the DB record can be cleared).
 
 ## 5. Deployment
 
@@ -172,12 +186,16 @@ Keeping this explicit so it isn't accidentally "discovered missing" later — th
 after weighing cost vs. value, not overlooked:
 
 - **Freeform drag-and-drop layout editing.** A real layout engine (drag, resize, collision,
-  responsive breakpoints, undo/redo) is a multi-month build on its own — see §3. If this becomes
-  a priority later, the plan is to integrate an existing engine (e.g. `craft.js`) rather than
-  building one from scratch.
-- **A setup CLI** (`npx @dora-cms/cli init`) that auto-detects the deploy target and provisions a
-  database/storage automatically. Right now, setup is manual (`.env` + the two deploy paths in
-  §5). This is the highest-value next addition for adoption friction, but was left out of this
-  build pass to keep scope to frontend + backend + docs.
+  responsive breakpoints, undo/redo) is a multi-month build on its own — see §3. What *is*
+  supported is drag-to-reorder within an existing list (`<EditableBlog>`'s posts, via `@dnd-kit`)
+  — a deliberately smaller, well-scoped slice of "drag and drop" that doesn't require a layout
+  engine. If freeform positioning becomes a priority later, the plan is to integrate an existing
+  engine (e.g. `craft.js`) rather than building one from scratch.
+- **A setup CLI that auto-detects the deploy target and provisions a database/storage
+  automatically.** `npx @dora-cms/cli init` exists and interactively generates the backend's
+  `.env` (secrets, password hash, storage config), but it doesn't provision the actual
+  MongoDB/S3-compatible resources — the developer still creates those accounts themselves and
+  pastes in the resulting credentials.
 - **Multi-tenant accounts/roles.** One admin password per backend instance, matching the
-  self-hosted-per-developer model.
+  self-hosted-per-developer model. The client can change that one password themselves (see §4),
+  but there's still only one account, not per-user logins.

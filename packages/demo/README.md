@@ -12,14 +12,16 @@ cp .env.example .env
 npm run dev --workspace=@dora-cms/demo
 ```
 
-Visit the printed URL normally to see the public site, or add `?edit=true` to see the admin
-login (password is whatever you set with `dora-cms init` / `hash-password` on the backend).
+Visit the printed URL normally to see the public site, or visit `/admin` to see the admin login
+(password is whatever you set with `dora-cms init` / `hash-password` on the backend). Once
+signed in, use the "Account" panel in the top-right corner to change that password.
 
 ## Deploy
 
 Deploy as its own Vercel project with **Root Directory = `packages/demo`**. Set
 `VITE_DORA_API_URL` in the Vercel project's environment variables to your deployed backend's URL
-(e.g. the Render service URL).
+(e.g. the Render service URL). The included `vercel.json` rewrites every path to `index.html` so
+that direct navigation to `/admin` works on Vercel's static hosting.
 
 ## License
 

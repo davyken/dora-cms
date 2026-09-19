@@ -94,4 +94,30 @@ describe("AdminLoginGate", () => {
     expect(await screen.findByText("Incorrect password")).toBeInTheDocument();
     expect(screen.queryByText("Site content")).not.toBeInTheDocument();
   });
+
+  it("toggles the password field between hidden and visible text", async () => {
+    setAdminMode(true);
+    installMockFetch({
+      "GET /api/sites/site1/content": () => ({ body: { items: [] } }),
+    });
+    const user = userEvent.setup();
+    render(
+      <DoraProvider siteId="site1" apiUrl="http://api.test">
+        <AdminLoginGate>
+          <p>Site content</p>
+        </AdminLoginGate>
+      </DoraProvider>
+    );
+
+    const input = await screen.findByPlaceholderText("Password");
+    expect(input).toHaveAttribute("type", "password");
+
+    const toggle = screen.getByRole("button", { name: "Show password" });
+    await user.click(toggle);
+    expect(input).toHaveAttribute("type", "text");
+    expect(screen.getByRole("button", { name: "Hide password" })).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Hide password" }));
+    expect(input).toHaveAttribute("type", "password");
+  });
 });

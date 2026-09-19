@@ -77,6 +77,13 @@ export function createDoraApi(config: DoraConfig) {
       clearToken();
     },
 
+    changePassword(currentPassword: string, newPassword: string): Promise<void> {
+      return request("/auth/password", {
+        method: "PUT",
+        body: JSON.stringify({ currentPassword, newPassword }),
+      });
+    },
+
     isAuthenticated(): boolean {
       return Boolean(getToken());
     },
@@ -131,6 +138,10 @@ export function createDoraApi(config: DoraConfig) {
 
     deleteBlogPost(id: string): Promise<void> {
       return request(`/blog/${encodeURIComponent(id)}`, { method: "DELETE" });
+    },
+
+    reorderBlogPosts(order: string[]): Promise<void> {
+      return request("/blog/reorder", { method: "PUT", body: JSON.stringify({ order }) });
     },
   };
 }
