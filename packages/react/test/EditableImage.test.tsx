@@ -127,4 +127,30 @@ describe("EditableImage", () => {
     await waitFor(() => expect(screen.getByAltText("Logo")).toHaveAttribute("src", "/logo.png"));
     expect(screen.queryByText("Reset")).not.toBeInTheDocument();
   });
+
+  it("lets an admin pick an image from the media library instead of uploading a new one", async () => {
+    setAdminMode(true);
+    seedAuthToken();
+    installMockFetch({
+      "GET /api/sites/site1/content": () => ({ body: { items: [] } }),
+      "GET /api/sites/site1/media": () => ({
+        body: { items: [{ id: "1", url: "https://cdn.test/library-logo.png", mimeType: "image/png", createdAt: "now" }] },
+      }),
+      "PUT /api/sites/site1/content/logo": () => ({
+        body: { slotId: "logo", type: "image", value: "https://cdn.test/library-logo.png", updatedAt: "now" },
+      }),
+    });
+    const user = userEvent.setup();
+    render(
+      <DoraProvider siteId="site1" apiUrl="http://api.test">
+        <EditableImage id="logo" src="/logo.png" alt="Logo" />
+      </DoraProvider>
+    );
+
+    await user.click(await screen.findByText("Choose existing"));
+    const thumb = await screen.findByAltText("Uploaded image");
+    await user.click(thumb.closest("button")!);
+
+    await waitFor(() => expect(screen.getByAltText("Logo")).toHaveAttribute("src", "https://cdn.test/library-logo.png"));
+  });
 });

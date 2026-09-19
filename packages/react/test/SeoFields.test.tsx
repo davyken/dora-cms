@@ -117,4 +117,33 @@ describe("SeoFields", () => {
     expect(screen.getByText("Replace image")).toBeInTheDocument();
     expect(screen.getByText("Remove")).toBeInTheDocument();
   });
+
+  it("lets an admin pick the OG image from the media library", async () => {
+    setAdminMode(true);
+    seedAuthToken();
+    installMockFetch({
+      "GET /api/sites/site1/content": () => ({ body: { items: [] } }),
+      "GET /api/sites/site1/media": () => ({
+        body: { items: [{ id: "1", url: "https://cdn.test/library-og.png", mimeType: "image/png", createdAt: "now" }] },
+      }),
+      "PUT /api/sites/site1/content/seo%3Adefault%3AogImage": () => ({
+        body: { slotId: "seo:default:ogImage", type: "image", value: "https://cdn.test/library-og.png", updatedAt: "now" },
+      }),
+    });
+    const user = userEvent.setup();
+    render(
+      <DoraProvider siteId="site1" apiUrl="http://api.test">
+        <SeoFields />
+      </DoraProvider>
+    );
+    await openPanel(user);
+
+    await user.click(screen.getByText("Choose existing"));
+    const thumb = await screen.findByAltText("Uploaded image");
+    await user.click(thumb.closest("button")!);
+
+    await waitFor(() =>
+      expect(screen.getByAltText("Social share image preview")).toHaveAttribute("src", "https://cdn.test/library-og.png")
+    );
+  });
 });

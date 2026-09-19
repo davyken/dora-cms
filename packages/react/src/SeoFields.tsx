@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { compressImage } from "./compressImage";
 import { useDora } from "./DoraProvider";
+import { MediaPicker } from "./MediaPicker";
 import { seoSlotIds } from "./seo";
 
 export interface SeoFieldsProps {
@@ -22,6 +23,7 @@ export function SeoFields({ page = "default" }: SeoFieldsProps) {
   const [open, setOpen] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [pickerOpen, setPickerOpen] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const slots = seoSlotIds(page);
@@ -61,6 +63,16 @@ export function SeoFields({ page = "default" }: SeoFieldsProps) {
     }
   };
 
+  const handlePick = async (url: string) => {
+    setPickerOpen(false);
+    setError(null);
+    try {
+      await setContentValue(slots.ogImage, "image", url);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not use that image");
+    }
+  };
+
   return (
     <div className={open ? "dora-seo-fields dora-seo-fields--open" : "dora-seo-fields"}>
       <button type="button" className="dora-seo-fields-toggle" onClick={() => setOpen((prev) => !prev)} aria-expanded={open}>
@@ -96,6 +108,9 @@ export function SeoFields({ page = "default" }: SeoFieldsProps) {
               <button type="button" onClick={() => inputRef.current?.click()} disabled={uploading}>
                 {uploading ? "Uploading…" : ogImage ? "Replace image" : "Upload image"}
               </button>
+              <button type="button" onClick={() => setPickerOpen(true)} disabled={uploading}>
+                Choose existing
+              </button>
               {ogImage && (
                 <button type="button" onClick={() => resetContentValue(slots.ogImage)} disabled={uploading}>
                   Remove
@@ -107,6 +122,7 @@ export function SeoFields({ page = "default" }: SeoFieldsProps) {
           {error && <p className="dora-seo-fields-error">{error}</p>}
         </div>
       )}
+      {pickerOpen && <MediaPicker onSelect={handlePick} onClose={() => setPickerOpen(false)} />}
     </div>
   );
 }

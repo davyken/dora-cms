@@ -26,8 +26,8 @@ it does; this file just tracks status. Nothing here is scoped out on purpose (th
 
 ## Specialities — in progress
 
-Added in response to "what other specialities can we add" — storage-provider choice and SEO were
-the first two picked from a longer list; the rest of that list is queued below.
+Added in response to "what other specialities can we add" — picked from a longer list, being
+built in priority order.
 
 4. **Pluggable storage adapters.** ✅ `STORAGE_DRIVER` env var (`packages/server/src/lib/storage.ts`)
    picks between `s3` (default — AWS S3/R2/B2, unchanged), `cloudinary` (managed image CDN),
@@ -40,17 +40,17 @@ the first two picked from a longer list; the rest of that list is queued below.
    Title/description/OG image are just three more `ContentItem` slots, scoped by `page`. See
    [ARCHITECTURE.md §4](./ARCHITECTURE.md#4-architecture).
 
-6. **Rich text formatting toolbar.** 🔲 Not started. The server already accepts and sanitizes a
-   `"richtext"` content type (`sanitize-html`), but `<Editable>` only ever produces plain text
-   today — there's no bold/italic/link UI. Closing this gap means adding a small formatting
-   toolbar to `<Editable>` (or a new `<EditableRichText>`) that saves as `"richtext"` instead of
-   `"text"`.
+6. **Rich text formatting toolbar.** ✅ `<Editable richText>` shows a bold/italic/link toolbar and
+   saves as the already-supported `"richtext"` type — `packages/react/src/Editable.tsx`. Uses
+   `document.execCommand`, a deliberate lightweight choice over a full editor dependency — see
+   [ARCHITECTURE.md §4](./ARCHITECTURE.md#4-architecture) for the trade-off and its testing gap
+   (execCommand is unimplemented in jsdom).
 
-7. **Media library.** 🔲 Not started. Every upload today is one-off — no way to browse or reuse a
-   previously uploaded image across slots. Needs: a way to list previously uploaded URLs (either
-   a lightweight `Media` collection recording each upload, or deriving the list from existing
-   `ContentItem`/`BlogPost` image values), a `GET /media` endpoint, and a picker UI in
-   `<EditableImage>`/`<SeoFields>` to choose an existing image instead of always uploading new.
+7. **Media library.** ✅ Every upload is now recorded in a `Media` collection
+   (`packages/server/src/models/Media.ts`) independent of whether it's currently in use, listed
+   via `GET /media`, and browsable through `<MediaPicker>` — wired into `<EditableImage>`'s and
+   `<SeoFields>`' "Choose existing" buttons. Removing an item from the library isn't implemented
+   yet (only listing/reuse) — a reasonable follow-up if needed.
 
 8. **Content version history / undo.** 🔲 Not started. Edits overwrite `ContentItem.value` in
    place with no history — a client who breaks something has no way back except asking the
@@ -84,8 +84,7 @@ the first two picked from a longer list; the rest of that list is queued below.
 
 ## Status
 
-Items 1–5 are done and published to npm. Items 6–8 (rich text, media library, content history)
-are next, in that order. Item 9 (multi-admin auth) is queued separately, deliberately last, since
-it's the riskiest change here. Items 10–11 are untouched. `docs/ARCHITECTURE.md` and
-`docs/PUBLISHING.md` are the source of truth for what *is* built; this file is the source of truth
-for status and what's next.
+Items 1–7 are done and published to npm. Item 8 (content version history) is next. Item 9
+(multi-admin auth) is queued separately, deliberately last, since it's the riskiest change here.
+Items 10–11 are untouched. `docs/ARCHITECTURE.md` and `docs/PUBLISHING.md` are the source of truth
+for what *is* built; this file is the source of truth for status and what's next.

@@ -54,4 +54,21 @@ describe("POST /api/sites/:siteId/upload", () => {
     expect(res.status).toBe(201);
     expect(res.body.url).toBe("https://cdn.example.com/uploads/fake.png");
   });
+
+  it("records the upload in the site's media library", async () => {
+    const siteId = uniqueSiteId();
+    const token = await loginAndGetToken(siteId);
+    await agent()
+      .post(`/api/sites/${siteId}/upload`)
+      .set("Authorization", `Bearer ${token}`)
+      .attach("file", TINY_PNG, { filename: "logo.png", contentType: "image/png" });
+
+    const mediaRes = await agent().get(`/api/sites/${siteId}/media`).set("Authorization", `Bearer ${token}`);
+    expect(mediaRes.status).toBe(200);
+    expect(mediaRes.body.items).toHaveLength(1);
+    expect(mediaRes.body.items[0]).toMatchObject({
+      url: "https://cdn.example.com/uploads/fake.png",
+      mimeType: "image/png",
+    });
+  });
 });

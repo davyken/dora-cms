@@ -1,4 +1,4 @@
-import type { BlogPost, ContentItem, ContentType, DoraConfig } from "./types";
+import type { BlogPost, ContentItem, ContentType, DoraConfig, MediaItem } from "./types";
 
 const TOKEN_KEY = "dora_token";
 
@@ -142,6 +142,10 @@ export function createDoraApi(config: DoraConfig) {
 
     reorderBlogPosts(order: string[]): Promise<void> {
       return request("/blog/reorder", { method: "PUT", body: JSON.stringify({ order }) });
+    },
+
+    getMedia(): Promise<{ items: MediaItem[] }> {
+      return request("/media");
     },
   };
 }

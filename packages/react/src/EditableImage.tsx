@@ -1,6 +1,7 @@
 import React, { useRef, useState } from "react";
 import { compressImage } from "./compressImage";
 import { useDora } from "./DoraProvider";
+import { MediaPicker } from "./MediaPicker";
 
 export interface EditableImageProps {
   /** Stable identifier for this image within the site, e.g. "logo" or "hero-image". */
@@ -25,6 +26,7 @@ export function EditableImage({ id, src, alt, className }: EditableImageProps) {
   const [uploading, setUploading] = useState(false);
   const [resetting, setResetting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [pickerOpen, setPickerOpen] = useState(false);
 
   const stored = content[id];
   const currentSrc = stored ? stored.value : src;
@@ -74,6 +76,16 @@ export function EditableImage({ id, src, alt, className }: EditableImageProps) {
     }
   };
 
+  const handlePick = async (url: string) => {
+    setPickerOpen(false);
+    setError(null);
+    try {
+      await setContentValue(id, "image", url);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not use that image");
+    }
+  };
+
   return (
     <span className={`${wrapperClassName} dora-editable-image--admin`}>
       <img src={currentSrc} alt={alt} />
@@ -86,6 +98,9 @@ export function EditableImage({ id, src, alt, className }: EditableImageProps) {
         >
           {uploading ? "Uploading…" : "Change image"}
         </button>
+        <button type="button" className="dora-editable-image-library" onClick={() => setPickerOpen(true)} disabled={uploading || resetting}>
+          Choose existing
+        </button>
         {stored && (
           <button type="button" className="dora-editable-image-reset" onClick={handleReset} disabled={uploading || resetting}>
             {resetting ? "Resetting…" : "Reset"}
@@ -94,6 +109,7 @@ export function EditableImage({ id, src, alt, className }: EditableImageProps) {
       </span>
       <input ref={inputRef} type="file" accept="image/png,image/jpeg,image/webp,image/gif" hidden onChange={handleFileChange} />
       {error && <span className="dora-editable-image-error">{error}</span>}
+      {pickerOpen && <MediaPicker onSelect={handlePick} onClose={() => setPickerOpen(false)} />}
     </span>
   );
 }

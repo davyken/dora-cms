@@ -76,6 +76,8 @@ already recognize, not a separate dashboard I have to learn.
 | Reorder blog posts | Yes — drag by the handle on each post; the new order is saved immediately |
 | Change their own admin password | Yes (`<AdminAccountPanel>`) — no developer involvement needed |
 | Edit a page's title/meta description/social-share image | Yes (`<SeoFields>` + `<DoraHead>` or `useSeo()`) — see §4 |
+| Format text (bold/italic/links) instead of plain text only | Yes (`<Editable richText>`) — see §4 |
+| Reuse a previously uploaded image instead of always uploading new | Yes ("Choose existing" on `<EditableImage>`/`<SeoFields>`, backed by the media library) — see §4 |
 | Move, resize, or freely reposition boxes on the page | **No** — this is a full visual page-builder (Webflow/Builder.io territory) and was explicitly scoped out of v1 as a multi-month undertaking; drag-and-drop here is limited to reordering existing lists (like blog posts), not freeform layout — see §7 |
 | Add an entirely new section that didn't exist in the code | **No** — only the developer defines what's editable |
 
@@ -85,9 +87,9 @@ already recognize, not a separate dashboard I have to learn.
 dora-cms/
   packages/
     react/    @dora-cms/react — <Editable>, <EditableImage>, <ThemeEditor>, <EditableBlog>,
-              <AdminLoginGate>, <AdminAccountPanel>, <SeoFields>, <DoraHead>, <DoraProvider>.
-              Pure UI + a thin fetch client. No backend code lives here.
-    server/   @dora-cms/server — Express API: content, blog, upload, auth routes. One
+              <AdminLoginGate>, <AdminAccountPanel>, <SeoFields>, <DoraHead>, <MediaPicker>,
+              <DoraProvider>. Pure UI + a thin fetch client. No backend code lives here.
+    server/   @dora-cms/server — Express API: content, blog, media, upload, auth routes. One
               codebase, two entry points (see §5).
     cli/      @dora-cms/cli — `npx @dora-cms/cli init` interactively generates the backend's
               `.env` (secrets, password hash, storage config).
@@ -122,6 +124,28 @@ plug that into whatever your framework already uses (Next's `<Head>`, `react-hel
 `useEffect`, which is enough for a plain client-rendered SPA (like this package's own demo) but
 does **not** affect the HTML a crawler sees before JS runs on a server-rendered framework — that
 case needs `useSeo()` fed into the framework's own server-side head API instead.
+
+**Why rich text uses `execCommand`, not an editor library:** `<Editable richText>` shows a
+bold/italic/link toolbar and saves as the already-supported `"richtext"` content type (sanitized
+server-side by `sanitize-html`'s default allow-list — `<b>`/`<strong>`/`<i>`/`<em>`/`<a href>` are
+all in it, so no server changes were needed). The toolbar itself uses `document.execCommand`,
+which is deprecated but still the pragmatic choice for three basic commands without pulling in a
+full editor dependency (TipTap, Lexical, ...) — a real trade-off, not an oversight; revisit if
+richer formatting is ever needed. One consequence: `execCommand` is unimplemented in jsdom, so
+`Editable.test.tsx`'s richText tests can only verify the toolbar renders and saves the right
+content *type* — not that clicking Bold actually bolds text, which has to be checked by hand in a
+real browser.
+
+**Why the media library is its own `Media` collection, not derived from existing uploads:**
+every upload (`POST /upload`) is recorded in `Media` (`{ siteId, url, mimeType }`) independent of
+whether the URL is currently referenced by any `ContentItem`/`BlogPost`. Deriving the list from
+current references instead would hide a perfectly good previous upload the moment it's swapped
+out of its original slot — the whole point of "reuse an old image" is that it doesn't have to
+still be in use somewhere to be reusable. `<MediaPicker>` (`GET /media`, admin-only) is a single
+full-viewport overlay shared by `<EditableImage>`'s and `<SeoFields>`' "Choose existing" buttons,
+rather than a bespoke dropdown in each — an overlay avoids fighting either component's surrounding
+page layout for space. Removing an item from the library isn't implemented yet (only listing) —
+see ROADMAP.md if that's needed.
 
 **Why images aren't stored in MongoDB:** binary blobs bloat documents, defeat CDN caching, and
 hit MongoDB's 16MB document ceiling awkwardly. Uploaded images go through a pluggable

@@ -5,6 +5,7 @@ import { requireAuth } from "../middleware/auth.js";
 import { UnsupportedFileTypeError } from "../lib/errors.js";
 import { rateLimitStore } from "../lib/rateLimitStore.js";
 import { getStorageAdapter } from "../lib/storage.js";
+import { Media } from "../models/Media.js";
 
 const ALLOWED_MIME_TYPES = new Set(["image/png", "image/jpeg", "image/webp", "image/gif"]);
 
@@ -37,6 +38,12 @@ uploadRouter.post("/", requireAuth, uploadLimiter, upload.single("file"), async 
     }
     const storage = getStorageAdapter();
     const url = await storage.upload(req.file.buffer, req.file.originalname, req.file.mimetype);
+
+    // Recorded independent of where the URL ends up being used, so the
+    // media library (GET /media) can offer it back later even after it's
+    // been swapped out of its original slot.
+    await Media.create({ siteId: req.params.siteId, url, mimeType: req.file.mimetype });
+
     res.status(201).json({ url });
   } catch (err) {
     next(err);

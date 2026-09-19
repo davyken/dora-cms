@@ -55,8 +55,10 @@ host to serve `index.html` for that path too, since there's no real page there �
 - **`<DoraProvider siteId apiUrl adminParam? adminPath?>`** — wraps your app; loads content and
   exposes `useDora()`. `adminPath` (e.g. `"/admin"`) puts the page into admin mode by URL path
   instead of the default `?edit=true` query param; set one or the other, not both.
-- **`<Editable id as?>children</Editable>`** — inline-editable text.
-- **`<EditableImage id src alt />`** — click-to-replace image; uploads are compressed/downscaled
+- **`<Editable id as? richText?>children</Editable>`** — inline-editable text. `richText` shows a
+  bold/italic/link toolbar and saves as sanitized HTML instead of plain text.
+- **`<EditableImage id src alt />`** — click-to-replace image, with a "Choose existing" option to
+  reuse a previous upload from the media library instead; uploads are compressed/downscaled
   client-side before they're sent.
 - **`<ThemeEditor variables={[{ key, label, default }]} />`** — applies saved colors as
   `--dora-{key}` CSS custom properties; renders a color-picker panel for admins.
@@ -68,6 +70,9 @@ host to serve `index.html` for that path too, since there's no real page there �
   own admin password; renders nothing outside admin mode.
 - **`<SeoFields page?>`** — collapsible admin panel for a page's title/meta description/
   social-share image, scoped by `page` (default `"default"`) for multi-page sites.
+- **`<MediaPicker onSelect onClose />`** — full-viewport overlay listing every image the client
+  has previously uploaded; used internally by `<EditableImage>`/`<SeoFields>`'s "Choose existing",
+  exported in case you want to build your own picker trigger elsewhere.
 - **`<DoraHead page? title description ogImage>`** — applies `useSeo()`'s result to
   `document.title`/`<meta>` tags; a convenience for plain client-rendered SPAs (doesn't affect
   server-rendered markup — use `useSeo()` with your framework's head API for that).

@@ -30,6 +30,68 @@
   background-color: color-mix(in srgb, var(--dora-admin-accent) 6%, transparent);
 }
 
+.dora-richtext-toolbar {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  margin-bottom: 4px;
+  padding: 4px;
+  background: var(--dora-admin-surface);
+  border: 1px solid var(--dora-admin-border);
+  border-radius: 8px;
+  box-shadow: var(--dora-admin-shadow);
+  font-family: var(--dora-admin-font);
+}
+.dora-richtext-toolbar > button {
+  min-width: 28px;
+  height: 28px;
+  padding: 0 6px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--dora-admin-ink);
+  font-size: 13px;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+.dora-richtext-toolbar > button:hover {
+  background: color-mix(in srgb, var(--dora-admin-accent) 12%, transparent);
+}
+.dora-richtext-link-bar {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: 4px;
+  padding-left: 4px;
+  border-left: 1px solid var(--dora-admin-border);
+}
+.dora-richtext-link-bar input {
+  font-family: inherit;
+  font-size: 12px;
+  padding: 5px 8px;
+  border: 1px solid var(--dora-admin-border);
+  border-radius: 6px;
+  outline: none;
+  width: 160px;
+}
+.dora-richtext-link-bar input:focus {
+  border-color: var(--dora-admin-accent);
+}
+.dora-richtext-link-bar > button {
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 5px 10px;
+  border: none;
+  border-radius: 6px;
+  background: var(--dora-admin-accent);
+  color: #fff;
+  cursor: pointer;
+}
+.dora-richtext-link-bar > button:hover {
+  background: var(--dora-admin-accent-hover);
+}
+
 /* ---------- EditableImage ---------- */
 .dora-editable-image {
   position: relative;
@@ -67,6 +129,7 @@
   opacity: 1;
 }
 .dora-editable-image-trigger,
+.dora-editable-image-library,
 .dora-editable-image-reset {
   font-family: var(--dora-admin-font);
   border: none;
@@ -78,15 +141,18 @@
   transition: background-color 0.15s ease, opacity 0.15s ease;
 }
 .dora-editable-image-trigger:disabled,
+.dora-editable-image-library:disabled,
 .dora-editable-image-reset:disabled {
   opacity: 0.6;
   cursor: default;
 }
-.dora-editable-image-trigger {
+.dora-editable-image-trigger,
+.dora-editable-image-library {
   background: #fff;
   color: var(--dora-admin-ink);
 }
-.dora-editable-image-trigger:hover:not(:disabled) {
+.dora-editable-image-trigger:hover:not(:disabled),
+.dora-editable-image-library:hover:not(:disabled) {
   background: #f3f4f6;
 }
 .dora-editable-image-reset {
@@ -617,4 +683,87 @@
   color: var(--dora-admin-danger);
   font-size: 12px;
   margin: 0;
+}
+
+/* ---------- MediaPicker ---------- */
+.dora-media-picker-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(17, 17, 17, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  z-index: 10000;
+  font-family: var(--dora-admin-font);
+}
+.dora-media-picker {
+  background: var(--dora-admin-surface);
+  border-radius: var(--dora-admin-radius);
+  box-shadow: var(--dora-admin-shadow);
+  width: 100%;
+  max-width: 640px;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.dora-media-picker-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--dora-admin-border);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--dora-admin-ink);
+}
+.dora-media-picker-close {
+  border: none;
+  background: transparent;
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  color: var(--dora-admin-muted);
+  padding: 4px 8px;
+  border-radius: 6px;
+}
+.dora-media-picker-close:hover {
+  background: color-mix(in srgb, var(--dora-admin-accent) 10%, transparent);
+}
+.dora-media-picker-status {
+  padding: 32px 16px;
+  text-align: center;
+  color: var(--dora-admin-muted);
+  font-size: 13px;
+  margin: 0;
+}
+.dora-media-picker-error {
+  color: var(--dora-admin-danger);
+}
+.dora-media-picker-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  gap: 10px;
+  padding: 16px;
+  overflow-y: auto;
+}
+.dora-media-picker-item {
+  padding: 0;
+  border: 1px solid var(--dora-admin-border);
+  border-radius: 8px;
+  overflow: hidden;
+  cursor: pointer;
+  background: none;
+  aspect-ratio: 1;
+  transition: border-color 0.15s ease;
+}
+.dora-media-picker-item:hover {
+  border-color: var(--dora-admin-accent);
+}
+.dora-media-picker-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }

@@ -7,6 +7,13 @@ export interface ContentItem {
   updatedAt: string;
 }
 
+export interface MediaItem {
+  id: string;
+  url: string;
+  mimeType: string;
+  createdAt: string;
+}
+
 export interface BlogPost {
   id: string;
   title: string;

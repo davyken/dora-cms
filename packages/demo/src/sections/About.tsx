@@ -7,7 +7,7 @@ export function About() {
       <div className="about-copy">
         <span className="eyebrow">Our Story</span>
         <h2>A neighborhood bakery, eleven years in the making</h2>
-        <Editable id="about-text" as="p">
+        <Editable id="about-text" as="p" richText>
           Every loaf here starts with a starter that's been alive for eleven years. We mill part
           of our own flour, and everything on the counter by 7am was made before sunrise. No
           shortcuts, no additives — just flour, water, salt, and time.

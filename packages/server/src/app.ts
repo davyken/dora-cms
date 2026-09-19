@@ -7,6 +7,7 @@ import { errorHandler } from "./middleware/errorHandler.js";
 import { authRouter } from "./routes/auth.js";
 import { blogRouter } from "./routes/blog.js";
 import { contentRouter } from "./routes/content.js";
+import { mediaRouter } from "./routes/media.js";
 import { uploadRouter } from "./routes/upload.js";
 import { LOCAL_UPLOAD_DEFAULT_DIR } from "./lib/storage.js";
 
@@ -55,6 +56,7 @@ export function createApp(): Express {
   app.use("/api/sites/:siteId/content", contentRouter);
   app.use("/api/sites/:siteId/blog", blogRouter);
   app.use("/api/sites/:siteId/upload", uploadRouter);
+  app.use("/api/sites/:siteId/media", mediaRouter);
 
   app.use(errorHandler);
 

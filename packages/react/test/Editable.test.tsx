@@ -110,4 +110,98 @@ describe("Editable", () => {
     await new Promise((r) => setTimeout(r, 0));
     expect(calls.some((c) => c.method === "PUT")).toBe(false);
   });
+
+  describe("richText", () => {
+    it("shows no formatting toolbar by default", async () => {
+      setAdminMode(true);
+      seedAuthToken();
+      installMockFetch({ "GET /api/sites/site1/content": () => ({ body: { items: [] } }) });
+      render(
+        <DoraProvider siteId="site1" apiUrl="http://api.test">
+          <Editable id="hero-title">Welcome</Editable>
+        </DoraProvider>
+      );
+      await screen.findByText("Welcome");
+      expect(screen.queryByTitle("Bold")).not.toBeInTheDocument();
+    });
+
+    it("shows a bold/italic/link toolbar when richText is on and the client can edit", async () => {
+      setAdminMode(true);
+      seedAuthToken();
+      installMockFetch({ "GET /api/sites/site1/content": () => ({ body: { items: [] } }) });
+      render(
+        <DoraProvider siteId="site1" apiUrl="http://api.test">
+          <Editable id="hero-title" richText>
+            Welcome
+          </Editable>
+        </DoraProvider>
+      );
+      expect(await screen.findByTitle("Bold")).toBeInTheDocument();
+      expect(screen.getByTitle("Italic")).toBeInTheDocument();
+      expect(screen.getByTitle("Link")).toBeInTheDocument();
+    });
+
+    it("shows no toolbar for a non-admin visitor even with richText on", async () => {
+      installMockFetch({ "GET /api/sites/site1/content": () => ({ body: { items: [] } }) });
+      render(
+        <DoraProvider siteId="site1" apiUrl="http://api.test">
+          <Editable id="hero-title" richText>
+            Welcome
+          </Editable>
+        </DoraProvider>
+      );
+      await screen.findByText("Welcome");
+      expect(screen.queryByTitle("Bold")).not.toBeInTheDocument();
+    });
+
+    it("saves the field's innerHTML as type richtext on blur", async () => {
+      setAdminMode(true);
+      seedAuthToken();
+      const { calls } = installMockFetch({
+        "GET /api/sites/site1/content": () => ({ body: { items: [] } }),
+        "PUT /api/sites/site1/content/hero-title": () => ({
+          body: { slotId: "hero-title", type: "richtext", value: "<strong>Bold text</strong>", updatedAt: "now" },
+        }),
+      });
+      render(
+        <DoraProvider siteId="site1" apiUrl="http://api.test">
+          <Editable id="hero-title" richText>
+            Welcome
+          </Editable>
+        </DoraProvider>
+      );
+
+      const el = await screen.findByText("Welcome");
+      el.innerHTML = "<strong>Bold text</strong>";
+      fireEvent.blur(el);
+
+      await waitFor(() => {
+        const saveCall = calls.find((c) => c.method === "PUT" && c.path === "/api/sites/site1/content/hero-title");
+        expect(saveCall).toBeTruthy();
+        expect(JSON.parse(saveCall!.init!.body as string)).toEqual({
+          type: "richtext",
+          value: "<strong>Bold text</strong>",
+        });
+      });
+    });
+
+    it("renders a saved richtext value as real markup, not escaped text, for a non-admin visitor", async () => {
+      installMockFetch({
+        "GET /api/sites/site1/content": () => ({
+          body: {
+            items: [{ slotId: "hero-title", type: "richtext", value: "<strong>Saved bold</strong>", updatedAt: "now" }],
+          },
+        }),
+      });
+      render(
+        <DoraProvider siteId="site1" apiUrl="http://api.test">
+          <Editable id="hero-title" richText>
+            Welcome
+          </Editable>
+        </DoraProvider>
+      );
+      const strong = await screen.findByText("Saved bold");
+      expect(strong.tagName).toBe("STRONG");
+    });
+  });
 });
